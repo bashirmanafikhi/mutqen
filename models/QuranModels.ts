@@ -69,3 +69,26 @@ export interface LearningItemDisplay extends UserLearning {
     start_aya: number;
     end_aya: number;
 }
+
+/**
+ * Interface for a record from the 'user_progress' table.
+ */
+export interface UserProgress {
+    word_id: number;
+    current_interval: number; // in days
+    review_count: number;
+    ease_factor: number; // usually starts at 2.5
+    next_review_date: string; // ISO date string
+    last_review_date: string; // ISO date string
+}
+
+/**
+ * Interface for a word combined with its UI state and progress.
+ */
+export interface WordCard extends QuranWord {
+    isRevealed: boolean;
+    progressStatus: 'hidden' | 'correct' | 'incorrect'; // For UI coloring
+    suraName: string; // For display
+    isFirstAyaWord: boolean;
+    isFirstSuraWord: boolean;
+}

@@ -7,7 +7,7 @@ import * as SQLite from "expo-sqlite";
 // =============================
 // Constants
 // =============================
-const DB_NAME = "quran_database_v2.db";
+const DB_NAME = "quran_database_v3.db";
 const DB_PATH = `${FileSystem.documentDirectory}SQLite/${DB_NAME}`;
 
 // =============================
@@ -25,7 +25,7 @@ async function ensureDatabaseExists(): Promise<void> {
   if (!dbInfo.exists) {
     console.log("📦 Copying Quran database from assets...");
 
-    const asset = Asset.fromModule(require("../assets/quran_database_v2.db"));
+    const asset = Asset.fromModule(require(`../assets/${DB_NAME}`));
     await asset.downloadAsync();
 
     await FileSystem.copyAsync({

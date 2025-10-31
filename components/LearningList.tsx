@@ -1,6 +1,7 @@
 // src/components/LearningList.tsx
 
 import { LearningItemDisplay } from '@/models/QuranModels'; // Use the display interface
+import { Link } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, FlatList, ListRenderItemInfo, Text, TouchableOpacity, View } from 'react-native';
 
@@ -63,13 +64,41 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
           <Text className="text-xs text-gray-400 mt-1 self-start">{new Date(item.created_at).toLocaleDateString()}</Text>
       </View>
       
-      {/* Delete Button (Action) */}
-      <TouchableOpacity
-        onPress={() => confirmDelete(item)}
-        className="bg-red-500 p-2 rounded-lg w-16 justify-center items-center h-10"
-      >
-        <Text className="text-white font-bold text-sm">حذف</Text>
-      </TouchableOpacity>
+
+      
+     {/* Action Buttons (NEW) */}
+      <View className="flex-row items-center space-x-2">
+        
+        {/* Train Button (NEW) */}
+        <Link 
+            // Navigate to the new route, passing the learning object's essential IDs
+            href={{
+                pathname: "/(train)/[...learningId]",
+                params: { 
+                    learningId: item.id.toString(),
+                    startWordId: item.start_word_id.toString(),
+                    endWordId: item.end_word_id.toString(),
+                    title: item.title,
+                }
+            }}
+            asChild
+        >
+            <TouchableOpacity
+                className="bg-indigo-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+            >
+                <Text className="text-white font-bold text-sm">تدريب</Text>
+            </TouchableOpacity>
+        </Link>
+        
+        {/* Delete Button (EXISTING) */}
+        <TouchableOpacity
+          onPress={() => confirmDelete(item)}
+          className="bg-red-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+        >
+          <Text className="text-white font-bold text-sm">حذف</Text>
+        </TouchableOpacity>
+      
+      </View>
       
     </View>
   );

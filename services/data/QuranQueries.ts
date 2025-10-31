@@ -1,6 +1,6 @@
 // src/services/data/QuranQueries.ts
 
-import { QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
+import { QuranJuz, QuranPage, QuranWord, Surah, UserLearning, UserProgress } from "../../models/QuranModels";
 import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 
 // =============================
@@ -36,6 +36,26 @@ export async function fetchWordsBySurahId(suraId: number): Promise<QuranWord[]> 
     console.error(`❌ Error fetching words for surah ${suraId}:`, error);
     throw error;
   }
+}
+
+/**
+ * Fetches words between two IDs, and their parent sura name.
+ */
+export async function fetchWordsByRange(startId: number, endId: number): Promise<QuranWord[]> {
+    const database = await getDb();
+    // This query is simplified for initial setup; you might need to JOIN sura details later.
+    const query = `
+        SELECT id, sura_id, aya_number, page_id, text, is_end_of_aya, can_stop
+        FROM quran_words 
+        WHERE id BETWEEN ? AND ?
+        ORDER BY id ASC;
+    `;
+    try {
+        return await database.getAllAsync<QuranWord>(query, [startId, endId]);
+    } catch (error) {
+        console.error("❌ Error fetching words by range:", error);
+        throw error;
+    }
 }
 
 // =============================
@@ -141,5 +161,74 @@ export async function fetchAllJuzs(): Promise<QuranJuz[]> {
     } catch (error) {
         console.error("❌ Error fetching Juzs:", error);
         throw error;
+    }
+}
+
+// =============================
+// Progress Queries (NEW)
+// =============================
+
+/**
+ * Fetches progress data for a specific word.
+ */
+export async function fetchProgressByWordId(wordId: number): Promise<UserProgress | null> {
+    const database = await getDb();
+    const query = `
+        SELECT word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date 
+        FROM user_progress 
+        WHERE word_id = ?;
+    `;
+    try {
+        return await database.getFirstAsync<UserProgress>(query, [wordId]);
+    } catch (error) {
+        console.error(`❌ Error fetching progress for word ${wordId}:`, error);
+        return null; // Return null on error
+    }
+}
+
+/**
+ * Inserts or updates the progress of a word.
+ */
+export async function upsertProgress(progress: UserProgress): Promise<void> {
+    const database = await getDb();
+    
+    // Check if the record exists
+    const existing = await fetchProgressByWordId(progress.word_id);
+
+    if (existing) {
+        // UPDATE
+        const updateQuery = `
+            UPDATE user_progress SET 
+                current_interval = ?, 
+                review_count = ?, 
+                ease_factor = ?, 
+                next_review_date = ?, 
+                last_review_date = ?
+            WHERE word_id = ?;
+        `;
+        await database.runAsync(updateQuery, [
+            progress.current_interval,
+            progress.review_count,
+            progress.ease_factor,
+            progress.next_review_date,
+            progress.last_review_date,
+            progress.word_id,
+        ]);
+        
+    } else {
+        // INSERT
+        const insertQuery = `
+            INSERT INTO user_progress 
+            (word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date)
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+        await database.runAsync(insertQuery, [
+            progress.word_id,
+            progress.current_interval,
+            progress.review_count,
+            progress.ease_factor,
+            progress.next_review_date,
+            progress.last_review_date,
+        ]);
     }
 }

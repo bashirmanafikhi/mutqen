@@ -4,6 +4,7 @@ import AddNewLearningModal from '@/components/AddNewLearningModal';
 import LearningList from '@/components/LearningList';
 import { LearningItemDisplay, UserLearning } from '@/models/QuranModels';
 import { deleteLearningById, fetchAllLearnings, insertNewLearning } from '@/services/data/QuranQueries';
+import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
@@ -92,6 +93,14 @@ export default function Index() {
 
     return (
         <View className="flex-1 bg-gray-50">
+            {/* 2. Configure the screen options */}
+            <Stack.Screen 
+                options={{ 
+                    title: 'متقن | حفظ القرأن الكريم'
+                }} 
+            />
+
+            
             {/* Header */}
             <View className="p-4 border-b border-gray-200 flex-row justify-between items-center bg-indigo-600">
                 
