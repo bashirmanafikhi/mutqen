@@ -1,12 +1,12 @@
+import { QuranWord } from '@/models/QuranModels';
 import React from 'react';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Text, View } from 'react-native';
-import { QuranWord } from '../services/DatabaseService'; // يجب استيراد واجهة الكلمة
 
 // ===============================================
 // واجهة (Interface) لتمثيل الآية المجمعة
 // ===============================================
 interface Aya {
-    aya_id: number;
+    aya_number: number;
     text: string;
 }
 
@@ -26,27 +26,27 @@ const groupWordsIntoAyas = (words: QuranWord[]): Aya[] => {
     
     words.forEach(word => {
         // نجمع الكلمات ونضيف مسافة بينها
-        let currentText = ayasMap.get(word.aya_id) || "";
+        let currentText = ayasMap.get(word.aya_number) || "";
         currentText += " " + word.text;
         
         // إذا كانت نهاية آية، نضف رقم الآية داخل قوسين (كعلامة)
         if (word.is_end_of_aya) {
-            currentText += ` {${word.aya_id}} `; 
+            currentText += ` {${word.aya_number}} `; 
         }
         
-        ayasMap.set(word.aya_id, currentText.trim());
+        ayasMap.set(word.aya_number, currentText.trim());
     });
 
     // نحول Map إلى مصفوفة لـ FlatList
     const ayas: Aya[] = [];
-    ayasMap.forEach((text, aya_id) => ayas.push({ aya_id, text }));
+    ayasMap.forEach((text, aya_number) => ayas.push({ aya_number, text }));
 
     return ayas;
 };
 
 const renderAyaItem = ({ item }: ListRenderItemInfo<Aya>) => (
     <View className="flex-row p-2 border-b border-gray-100 items-start">
-        <Text className="text-gray-500 font-bold w-6 text-center mt-1">{item.aya_id}</Text>
+        <Text className="text-gray-500 font-bold w-6 text-center mt-1">{item.aya_number}</Text>
         {/* تنسيق الخط العربي هنا مهم جداً لضمان عرض النص القرآني بشكل صحيح */}
         <Text className="flex-1 text-2xl font-quran leading-loose text-right">
             {item.text}
@@ -81,7 +81,7 @@ export default function SurahTextDisplay({ words, surahName, isLoading }: SurahT
         <FlatList<Aya>
             data={ayas}
             renderItem={renderAyaItem}
-            keyExtractor={(item) => item.aya_id.toString()}
+            keyExtractor={(item) => item.aya_number.toString()}
             className="flex-1 p-4"
             ListHeaderComponent={() => (
                 <Text className="text-3xl font-bold text-center mb-4 text-blue-800">
