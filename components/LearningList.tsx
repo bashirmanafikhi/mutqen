@@ -28,7 +28,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
             // Apply dark mode background to the loading container
             <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-gray-900">
                 {/* Ensure indicator color is visible in both modes */}
-                <ActivityIndicator size="large" color={isDark ? "#818cf8" : "#4F46E5"} /> 
+                <ActivityIndicator size="large" color={isDark ? "#818cf8" : "#4F46E5"} />
                 {/* Apply dark mode text color */}
                 <Text className="mt-2 text-lg text-gray-500 dark:text-gray-400">جاري تحميل قائمة المحفوظات...</Text>
             </View>
@@ -65,29 +65,48 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
     const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
         // 🌟 Apply dark mode to list item background and border 🌟
         <View className="flex-row justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
-            
+
             {/* Learning Details (Main Content) */}
-            <View className="flex-1 mr-4"> 
+            <View className="flex-1 mr-4">
                 {/* Title Text */}
                 <Text className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{item.title}</Text>
-                
+
                 {/* Sura/Aya Text */}
                 <Text className="text-base text-indigo-600 dark:text-indigo-400 mb-1">
                     {item.title} - الآيات: {item.start_word_id} - {item.end_word_id}
                 </Text>
-                
+
                 {/* Date Text */}
                 <Text className="text-xs text-gray-400 dark:text-gray-500 mt-1 self-start">{new Date(item.created_at).toLocaleDateString()}</Text>
             </View>
-            
+
             {/* Action Buttons */}
             <View className="flex-row items-center space-x-2">
-                
+
+                <Link
+                    href={{
+                        pathname: "/(train)/read/[...learningId]",
+                        params: {
+                            learningId: [item.id.toString()],
+                            startWordId: item.start_word_id.toString(),
+                            endWordId: item.end_word_id.toString(),
+                            title: item.title,
+                        }
+                    }}
+                    asChild
+                >
+                    <TouchableOpacity
+                        className="bg-emerald-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+                    >
+                        <Text className="text-white font-bold text-sm">قراءة</Text>
+                    </TouchableOpacity>
+                </Link>
+
                 {/* Train Button */}
-                <Link 
+                <Link
                     href={{
                         pathname: "/(train)/[...learningId]",
-                        params: { 
+                        params: {
                             learningId: [item.id.toString()],
                             startWordId: item.start_word_id.toString(),
                             endWordId: item.end_word_id.toString(),
@@ -103,7 +122,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                         <Text className="text-white font-bold text-sm">تدريب</Text>
                     </TouchableOpacity>
                 </Link>
-                
+
                 {/* Delete Button */}
                 <TouchableOpacity
                     onPress={() => confirmDelete(item)}
@@ -112,9 +131,9 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                 >
                     <Text className="text-white font-bold text-sm">حذف</Text>
                 </TouchableOpacity>
-            
+
             </View>
-            
+
         </View>
     );
 

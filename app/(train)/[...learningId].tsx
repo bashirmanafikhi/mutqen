@@ -48,7 +48,7 @@ export default function RevealCardsTraining() {
 
     // --- Data Fetching and Preparation ---
     const loadWords = useCallback(async () => {
-        if (!startWordId || !endWordId) {
+        if (isNaN(startWordId) || isNaN(endWordId)) {
             Alert.alert("خطأ", "لم يتم تمرير معرّفات الكلمات بشكل صحيح.");
             return;
         }
