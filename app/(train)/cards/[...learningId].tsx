@@ -113,12 +113,7 @@ export default function RevealCardsTraining() {
     // --- Handlers for WordCard (No change) ---
 
     const handleReveal = (wordId: number) => {
-        setAllWords(prev => prev.map(word => {
-            if (word.id === wordId) {
-                return { ...word, isRevealed: true };
-            }
-            return word;
-        }));
+        handleSwipeAction(wordId, true); // Treat reveal as correct answer
     };
 
     const handleProgressConfirmation = (wordId: number, isCorrect: boolean) => {

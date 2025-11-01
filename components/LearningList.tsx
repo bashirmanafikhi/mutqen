@@ -107,7 +107,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                 <Link
                 className='m-1'
                     href={{
-                        pathname: "/(train)/[...learningId]",
+                        pathname: "/(train)/cards/[...learningId]",
                         params: {
                             learningId: [item.id.toString()],
                             startWordId: item.start_word_id.toString(),
