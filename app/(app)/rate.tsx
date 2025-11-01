@@ -9,12 +9,6 @@ export default function RateScreen() {
             <Stack.Screen options={{ title: "تقييم التطبيق" }} />
             <Text className='text-gray-700 dark:text-gray-200'>Rate the App Content</Text>
 
-            <View className="flex-1 dark bg-white dark:bg-black">
-                <Text className="text-black dark:text-white">
-                    Dark test
-                </Text>
-            </View>
-
         </View>
     );
 }

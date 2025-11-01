@@ -58,17 +58,6 @@ export interface UserLearning {
 // Interfaces for App State
 // =============================
 
-/**
- * Represents a learning item combined with its identifying information 
- * (useful for displaying in the list).
- */
-export interface LearningItemDisplay extends UserLearning {
-    // Add display fields derived from foreign keys
-    display_text: string; 
-    sura_name: string;
-    start_aya: number;
-    end_aya: number;
-}
 
 /**
  * Interface for a record from the 'user_progress' table.

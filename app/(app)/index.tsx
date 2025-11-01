@@ -1,38 +1,26 @@
-// app/index.tsx (Main Screen)
+// app/index.tsx (Main Screen - Dark Mode Applied)
 
 import AddNewLearningModal from '@/components/AddNewLearningModal';
 import LearningList from '@/components/LearningList';
-import { LearningItemDisplay, UserLearning } from '@/models/QuranModels';
+import { useSettings } from '@/context/AppSettingContext'; // 👈 Import useSettings
+import { UserLearning } from '@/models/QuranModels';
 import { deleteLearningById, fetchAllLearnings, insertNewLearning } from '@/services/data/QuranQueries';
+import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 // ===============================================
-// Helper Function (In a real app, this should be a service)
+// Helper Function
 // ===============================================
-
-/**
- * Converts a raw UserLearning item into a displayable format.
- * NOTE: This is a placeholder. In a full app, you'd fetch Sura Name/Aya Numbers from DB.
- */
-const convertToDisplayItem = (item: UserLearning): LearningItemDisplay => {
-    // Placeholder logic for demonstration
-    return {
-        ...item,
-        display_text: `بداية ID: ${item.start_word_id}, نهاية ID: ${item.end_word_id}`,
-        sura_name: `سورة رقم ${Math.floor(item.start_word_id / 100)}`, // DEMO derivation
-        start_aya: Math.floor(item.start_word_id / 10), // DEMO derivation
-        end_aya: Math.floor(item.end_word_id / 10),     // DEMO derivation
-    };
-};
 
 // ===============================================
 // Main Component
 // ===============================================
 export default function Index() {
+    const { isDark } = useSettings(); // 👈 Get dark mode status
     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-    const [learnings, setLearnings] = useState<LearningItemDisplay[]>([]);
+    const [learnings, setLearnings] = useState<UserLearning[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // --- Data Fetching ---
@@ -40,8 +28,7 @@ export default function Index() {
         setIsLoading(true);
         try {
             const rawLearnings = await fetchAllLearnings();
-            const displayLearnings = rawLearnings.map(convertToDisplayItem);
-            setLearnings(displayLearnings);
+            setLearnings(rawLearnings);
         } catch (error) {
             console.error("Failed to load learnings:", error);
             Alert.alert("خطأ في البيانات", "فشل تحميل المحفوظات من قاعدة البيانات.");
@@ -57,14 +44,9 @@ export default function Index() {
     // --- Learning Creation Handler ---
     const handleCreateLearning = async (title: string, startWordId: number, endWordId: number) => {
         try {
-            // 1. Save to Database
             const newRawLearning = await insertNewLearning(title, startWordId, endWordId);
-            
-            // 2. Convert and Update Local State (avoids full refetch)
-            const newDisplayItem = convertToDisplayItem(newRawLearning);
-            
-            // Add the new item to the beginning of the list
-            setLearnings(prevLearnings => [newDisplayItem, ...prevLearnings]); 
+
+            setLearnings(prevLearnings => [newRawLearning, ...prevLearnings]);
 
             Alert.alert("نجاح", `تم حفظ "${title}" بنجاح!`);
 
@@ -74,15 +56,11 @@ export default function Index() {
         }
     };
 
-    // --- Learning Deletion Handler (NEW) ---
+    // --- Learning Deletion Handler ---
     const handleDeleteLearning = async (id: number) => {
         try {
-            // 1. Delete from Database
             await deleteLearningById(id);
-            
-            // 2. Update Local State (filter out the deleted item immediately)
-            setLearnings(prevLearnings => prevLearnings.filter(item => item.id !== id)); 
-
+            setLearnings(prevLearnings => prevLearnings.filter(item => item.id !== id));
             Alert.alert("تم الحذف", "تم حذف المحفوظ بنجاح.");
 
         } catch (error) {
@@ -92,28 +70,31 @@ export default function Index() {
     };
 
     return (
-        <View className="flex-1 bg-gray-50">
-            {/* 2. Configure the screen options */}
-            <Stack.Screen 
-                options={{ 
+        // 1. Apply dark mode background to the main view
+        <View className="flex-1 bg-gray-50 dark:bg-gray-900">
+            {/* 2. Configure the screen options (Header style is set in _layout.tsx) */}
+            <Stack.Screen
+                options={{
                     title: 'متقن | حفظ القرأن الكريم'
-                }} 
+                }}
             />
 
-            
-            {/* Header */}
-            <View className="p-4 border-b border-gray-200 flex-row justify-between items-center bg-indigo-600">
-                
+            {/* Header (This local header is redundant since you have an app header in _layout.tsx, 
+                but we'll style it for dark mode if you choose to keep it) */}
+            <View className="p-4 border-b border-gray-200 dark:border-gray-700 flex-row justify-between items-center bg-indigo-600 dark:bg-gray-800">
+
                 <Text className="text-2xl font-bold text-white">
                     قائمة المحفوظات
                 </Text>
-                
+
                 {/* Button to open AddNewLearningModal */}
                 <TouchableOpacity
-                    className="bg-white p-2 rounded-full w-10 h-10 justify-center items-center shadow-lg"
+                    className="bg-white dark:bg-gray-700 p-2 rounded-full w-16 h-10 justify-center items-center shadow-lg dark:shadow-none"
                     onPress={() => setIsModalVisible(true)}
                 >
-                    <Text className="text-2xl text-indigo-600 font-bold">إضافة +</Text>
+                    <Ionicons name={"add"} size={20} color={isDark ?
+                        '#f9fafb' :
+                        '#4f46e5'} />
                 </TouchableOpacity>
             </View>
 
@@ -128,7 +109,7 @@ export default function Index() {
             <AddNewLearningModal
                 isVisible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
-                onCreateLearning={handleCreateLearning} 
+                onCreateLearning={handleCreateLearning}
             />
         </View>
     );

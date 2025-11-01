@@ -5,7 +5,7 @@ import { QuranWord, WordCard } from '@/models/QuranModels';
 import { fetchProgressByWordId, fetchWordsByRange, upsertProgress } from '@/services/data/QuranQueries';
 import { getUpdatedProgress } from '@/services/SpacedRepetitionService';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -23,6 +23,8 @@ export default function RevealCardsTraining() {
     const [allWords, setAllWords] = useState<WordCard[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const revealedListRef = useRef<FlatList<WordCard>>(null);
+
     // Filter words that have been revealed/completed (move up)
     const revealedWords = useMemo(() => allWords.filter(w => w.isRevealed), [allWords]);
     // Filter words that are still hidden (stay down)
@@ -30,6 +32,19 @@ export default function RevealCardsTraining() {
 
     // Get the current word to be shown (the first hidden word)
     const currentHiddenWord = hiddenWords[0];
+
+
+    // 🌟 Scroll to the end whenever revealedWords changes
+    useEffect(() => {
+        // We need a slight delay to ensure the FlatList has fully re-rendered 
+        // with the new data before we try to scroll.
+        if (revealedWords.length > 0) {
+            setTimeout(() => {
+                revealedListRef.current?.scrollToEnd({ animated: true });
+            }, 50); // A small delay (e.g., 50ms) is often necessary
+        }
+    }, [revealedWords]); // Run effect whenever the list of revealed words changes
+
 
     // --- Data Fetching and Preparation ---
     const loadWords = useCallback(async () => {
@@ -129,9 +144,8 @@ export default function RevealCardsTraining() {
 
     // Render an individual revealed word in the top list (No change)
     const renderRevealedItem = ({ item }: { item: WordCard }) => (
-        <View className="flex-row items-center justify-between m-4 p-4 rounded-lg"
+        <View className="flex-row items-center justify-between m-4 p-4 rounded-lg dark:bg-gray-800"
             style={{ backgroundColor: item.progressStatus === 'correct' ? '#D1FAE5' : '#FEE2E2' }}>
-            <Text className="text-lg font-arabic font-semibold">{item.text}</Text>
 
             {/* Options to change mind (Negative/Positive) */}
             <View className="flex-row space-x-2">
@@ -139,17 +153,20 @@ export default function RevealCardsTraining() {
                     <Text>تغيير</Text>
                 </TouchableOpacity>
             </View>
+
+            <Text className="text-lg font-arabic font-semibold">{item.text}</Text>
         </View>
     );
 
     return (
         <View className="flex-1 bg-gray-50 dark:bg-gray-900 p-8">
-            <Stack.Screen options={{ title: title, headerBackTitle: "عودة" }} />
+            <Stack.Screen options={{ title: title }} />
 
             {/* 1. Revealed Words List */}
-            <View style={{ flex: 2 }} className="border-b border-gray-200 dark:border-gray-700 bg-white">
+            <View style={{ flex: 2 }} className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg mb-4">
                 <FlatList
-                    data={revealedWords.reverse()}
+                    ref={revealedListRef}
+                    data={[...revealedWords]}
                     renderItem={renderRevealedItem}
                     keyExtractor={(item) => `revealed-${item.id}`}
                     ListHeaderComponent={<Text className="text-center text-xl font-bold p-3 border-b border-gray-200 dark:border-gray-700 dark:text-white">الكلمات المكتشفة</Text>}
@@ -173,15 +190,17 @@ export default function RevealCardsTraining() {
                             />
                         </View>
                     )}
+
+                    {/* End of training overlay */}
+                    {hiddenWords.length === 0 && (
+                        <View className="justify-center items-center bg-black/50">
+                            <Text className="text-3xl text-white font-bold p-6 bg-green-600 rounded-lg">✅ انتهى التدريب!</Text>
+                        </View>
+                    )}
                 </View>
             </GestureHandlerRootView>
 
-            {/* End of training overlay */}
-            {hiddenWords.length === 0 && (
-                <View className="absolute inset-0 justify-center items-center bg-black/50">
-                    <Text className="text-3xl text-white font-bold p-6 bg-green-600 rounded-lg">✅ انتهى التدريب!</Text>
-                </View>
-            )}
+
 
         </View>
     );

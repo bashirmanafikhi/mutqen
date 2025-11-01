@@ -58,6 +58,30 @@ export async function fetchWordsByRange(startId: number, endId: number): Promise
     }
 }
 
+// Get first & last word id for a Surah
+export async function fetchWordRangeForSurah(surahId: number) {
+  const db = await getDb();
+  const query = `
+    SELECT MIN(id) as start, MAX(id) as end
+    FROM quran_words
+    WHERE sura_id = ?;
+  `;
+  const result = await db.getFirstAsync<{ start: number, end: number }>(query, [surahId]);
+  return result;
+}
+
+// Get first & last word id for a Page
+export async function fetchWordRangeForPage(pageId: number) {
+  const db = await getDb();
+  const query = `
+    SELECT MIN(id) as start, MAX(id) as end
+    FROM quran_words
+    WHERE page_id = ?;
+  `;
+  const result = await db.getFirstAsync<{ start: number, end: number }>(query, [pageId]);
+  return result;
+}
+
 // =============================
 // Page Queries
 // =============================
