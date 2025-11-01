@@ -1,120 +1,115 @@
-// src/context/ThemeContext.tsx
+// src/context/AppSettingsContext.tsx
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 
-// Define the shape of the context data
-interface ThemeContextProps {
-    theme: ColorSchemeName;
-    isDark: boolean;
-    toggleTheme: () => void;
-}
-
-// --- Font Size Configuration ---
+// -------------------
+// Font Size Config (Tailwind classes)
+// -------------------
 export const FONT_SIZES = {
-    small: 14,
-    medium: 16,
-    large: 18,
-};
+  small: "text-app-sm",
+  medium: "text-app-md",
+  large: "text-app-lg",
+  xlarge: "text-app-xl",
+} as const;
 export type FontSizeKey = keyof typeof FONT_SIZES;
 
+// -------------------
+// Context Interface
+// -------------------
 interface AppSettingsContextProps {
-    theme: ColorSchemeName;
-    isDark: boolean;
-    toggleTheme: () => void;
-    // --- NEW: Font Size Properties ---
-    fontSize: number;
-    fontSizeKey: FontSizeKey;
-    setFontSizeKey: (key: FontSizeKey) => void;
+  theme: ColorSchemeName;
+  isDark: boolean;
+  toggleTheme: () => void;
+
+  fontSizeKey: FontSizeKey;
+  fontSizeClass: string; // Tailwind class for text size
+  setFontSizeKey: (key: FontSizeKey) => void;
 }
-const AppSettingsContext = createContext<AppSettingsContextProps | undefined>(undefined);
-const FONT_STORAGE_KEY = 'user_preferred_font_size';
+
+// -------------------
+// AsyncStorage Keys
+// -------------------
 const THEME_STORAGE_KEY = 'user_preferred_theme';
+const FONT_STORAGE_KEY = 'user_preferred_font_size';
 
-export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [theme, setTheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+// -------------------
+// Context & Provider
+// -------------------
+const AppSettingsContext = createContext<AppSettingsContextProps | undefined>(undefined);
 
+export const AppSettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [theme, setTheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+  const [fontSizeKey, setFontSizeKeyState] = useState<FontSizeKey>('medium');
 
-    const [fontSizeKey, setFontSizeKey] = useState<FontSizeKey>('medium');
-    const fontSize = FONT_SIZES[fontSizeKey];
+  const isDark = theme === 'dark';
+  const fontSizeClass = FONT_SIZES[fontSizeKey];
 
-    // --- Font Size Persistence Logic ---
-    useEffect(() => {
-        const loadFontSize = async () => {
-            try {
-                const storedKey = await AsyncStorage.getItem(FONT_STORAGE_KEY) as FontSizeKey;
-                if (storedKey && FONT_SIZES[storedKey]) {
-                    setFontSizeKey(storedKey);
-                }
-            } catch (e) {
-                console.error("Failed to load font size:", e);
-            }
-        };
-        loadFontSize();
-    }, []);
+  // -------------------
+  // Load Theme & Font from Storage
+  // -------------------
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const storedTheme = (await AsyncStorage.getItem(THEME_STORAGE_KEY)) as ColorSchemeName | null;
+        if (storedTheme) setTheme(storedTheme);
 
-    const handleSetFontSizeKey = async (key: FontSizeKey) => {
-        setFontSizeKey(key);
-        await AsyncStorage.setItem(FONT_STORAGE_KEY, key);
+        const storedFont = (await AsyncStorage.getItem(FONT_STORAGE_KEY)) as FontSizeKey | null;
+        if (storedFont && FONT_SIZES[storedFont]) setFontSizeKeyState(storedFont);
+      } catch (e) {
+        console.error('Failed to load app settings:', e);
+      }
     };
+    loadSettings();
+  }, []);
 
-    // --- Theme Persistence Logic ---
-    useEffect(() => {
-        // 1. Load preference from storage
-        const loadTheme = async () => {
-            try {
-                const storedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY) as ColorSchemeName;
-                if (storedTheme) {
-                    setTheme(storedTheme);
-                } else {
-                    // Fallback to system if nothing stored
-                    setTheme(Appearance.getColorScheme());
-                }
-            } catch (e) {
-                console.error("Failed to load theme:", e);
-            }
-        };
+  // -------------------
+  // Handlers
+  // -------------------
+  const toggleTheme = async () => {
+    const newTheme: ColorSchemeName = isDark ? 'light' : 'dark';
+    setTheme(newTheme);
+    try {
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+    } catch (e) {
+      console.error('Failed to save theme:', e);
+    }
+  };
 
-        loadTheme();
+  const setFontSizeKey = async (key: FontSizeKey) => {
+    setFontSizeKeyState(key);
+    try {
+      await AsyncStorage.setItem(FONT_STORAGE_KEY, key);
+    } catch (e) {
+      console.error('Failed to save font size:', e);
+    }
+  };
 
-        // 2. Listen for system changes (if user hasn't set a preference)
-        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-            // Only update if the user hasn't explicitly set a preference (optional logic)
-            // For simplicity, we usually let the user preference override the system.
-        });
-
-        return () => subscription.remove();
-    }, []);
-
-    const isDark = theme === 'dark';
-
-    // --- Toggle Function ---
-    const toggleTheme = async () => {
-        const newTheme = isDark ? 'light' : 'dark';
-        setTheme(newTheme);
-        await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
-    };
-
-return (
-        <AppSettingsContext.Provider value={{ 
-            theme, 
-            isDark, 
-            toggleTheme,
-            fontSize, 
-            fontSizeKey, 
-            setFontSizeKey: handleSetFontSizeKey 
-        }}>
-            {children}
-        </AppSettingsContext.Provider>
-    );
+  // -------------------
+  // Provider
+  // -------------------
+  return (
+    <AppSettingsContext.Provider
+      value={{
+        theme,
+        isDark,
+        toggleTheme,
+        fontSizeKey,
+        fontSizeClass,
+        setFontSizeKey,
+      }}
+    >
+      {children}
+    </AppSettingsContext.Provider>
+  );
 };
 
-// Custom hook to use the app settings context
+// -------------------
+// Custom Hook
+// -------------------
 export const useSettings = () => {
-    const context = useContext(AppSettingsContext);
-    if (context === undefined) {
-        throw new Error('useSettings must be used within an AppSettingsProvider');
-    }
-    return context;
+  const context = useContext(AppSettingsContext);
+  if (!context) throw new Error('useSettings must be used within an AppSettingsProvider');
+  return context;
 };

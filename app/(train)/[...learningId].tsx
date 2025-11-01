@@ -147,7 +147,7 @@ export default function RevealCardsTraining() {
             <Stack.Screen options={{ title: title, headerBackTitle: "عودة" }} />
 
             {/* 1. Revealed Words List */}
-            <View style={{ flex: 3 }} className="border-b border-gray-200 dark:border-gray-700 bg-white">
+            <View style={{ flex: 2 }} className="border-b border-gray-200 dark:border-gray-700 bg-white">
                 <FlatList
                     data={revealedWords.reverse()}
                     renderItem={renderRevealedItem}
@@ -164,7 +164,7 @@ export default function RevealCardsTraining() {
                     <Text className="text-xl font-bold text-center text-gray-700 dark:text-gray-200 dark:bg-gray-900 mb-4">الكلمة التالية ({hiddenWords.length} متبقية)</Text>
 
                     {currentHiddenWord && (
-                        <View className="w-full max-w-sm mb-2">
+                        <View className="w-full max-w-sm">
                             <WordCardComponent
                                 key={currentHiddenWord.id}
                                 card={currentHiddenWord}

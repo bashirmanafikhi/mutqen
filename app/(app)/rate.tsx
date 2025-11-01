@@ -3,11 +3,18 @@
 import { Stack } from 'expo-router';
 import { Text, View } from 'react-native';
 
-export default function RateScreen() { // <-- Must have 'export default'
+export default function RateScreen() {
     return (
-        <View style={{ flex: 1, padding: 20 }}>
+        <View className="flex-1 bg-gray-50 dark:bg-gray-900 p-8">
             <Stack.Screen options={{ title: "تقييم التطبيق" }} />
-            <Text>Rate the App Content</Text>
+            <Text className='text-gray-700 dark:text-gray-200'>Rate the App Content</Text>
+
+            <View className="flex-1 dark bg-white dark:bg-black">
+                <Text className="text-black dark:text-white">
+                    Dark test
+                </Text>
+            </View>
+
         </View>
     );
 }

@@ -1,79 +1,62 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import { Slot, SplashScreen } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import { AppSettingsProvider, useSettings } from '../context/AppSettingContext';
 import './globals.css';
 
-// تم تحديث المسار إلى الاسم المستعار القياسي @/
-import { AppSettingsProvider, useSettings } from '@/context/AppSettingContext';
-import { Ionicons } from '@expo/vector-icons';
-
-// إبقاء شاشة البداية مرئية حتى يتم تحميل الخطوط
 SplashScreen.preventAutoHideAsync();
 
-// 1. ThemeWrapper: يطبق الثيم وحجم الخط بشكل عام
 function ThemeWrapper({ children }: { children: ReactNode }) {
-    const { isDark } = useSettings();
+  const { isDark } = useSettings();
+  const { setColorScheme } = useColorScheme();
 
-    // نستخدم الـ 'dark' أو 'light' كـ className
-    // ويتم تطبيق الألوان داخل المكونات الفرعية
-    return (
-        // تطبيق الكلاس 'dark' أو 'light' على الحاوية العليا
-        <View className={`flex-1 ${isDark ? 'dark' : 'light'} bg-white dark:bg-gray-900`}>
-            {children}
-        </View>
-    );
+  setColorScheme(isDark ? 'dark' : 'light');
+
+  return (
+    <View className="flex-1 bg-white dark:bg-gray-900">
+      {children}
+    </View>
+  );
 }
-
 
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  // نستخدم string لتخزين رسالة الخطأ لتجنب خطأ React "Objects are not valid as a React child"
-  const [fontErrorMessage, setFontErrorMessage] = useState<string | null>(null); 
+  const [fontErrorMessage, setFontErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadResourcesAndDataAsync() {
-    try {
-      console.log('START: بدء محاولة تحميل الخطوط والأيقونات...'); // <--- نقطة تتبع
-      
-      await Font.loadAsync({
-        // ... (الخطوط المعلقة)
-        ...Ionicons.font,
-      });
+    async function loadResources() {
+      try {
+        await Font.loadAsync({
+          calibri: require('../assets/fonts/calibri.ttf'),
+          uthmanic_hafs1_ver13: require('../assets/fonts/uthmanic_hafs1_ver13.otf'),
+          ...Ionicons.font,
+        });
 
-      console.log('SUCCESS: تم تحميل الخطوط بنجاح.'); // <--- نقطة تتبع
-      setFontsLoaded(true);
-
-    } catch (e: any) {
-      // ...
-      console.error('FAILURE: خطأ في تحميل الخطوط!', e); // <--- نقطة تتبع
-    } finally {
-      setFontsLoaded(true);
-      SplashScreen.hideAsync();
-      console.log('FINALLY: إخفاء شاشة البداية، fontsLoaded =', true); // <--- نقطة تتبع
+        setFontsLoaded(true);
+      } catch (e: any) {
+        setFontErrorMessage(`فشل تحميل: ${e.message || 'خط غير معروف'}`);
+      } finally {
+        SplashScreen.hideAsync();
+      }
     }
-  }
 
-    loadResourcesAndDataAsync();
+    loadResources();
   }, []);
 
   if (fontErrorMessage) {
-    // عرض رسالة الخطأ كـ Text بسيط 
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fefefe' }}>
-        <Text style={{ color: 'red', fontSize: 16 }}>خطأ في تحميل الخطوط</Text>
-        <Text style={{ color: 'red', fontSize: 12, textAlign: 'center' }}>{fontErrorMessage}</Text>
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-red-600 text-base">خطأ في تحميل الخطوط</Text>
+        <Text className="text-red-600 text-xs text-center">{fontErrorMessage}</Text>
       </View>
     );
   }
 
-  if (!fontsLoaded) {
-    // يجب أن يعرض null فقط أثناء التحميل
-        return null;
-  }
+  if (!fontsLoaded) return null;
 
-  // 3. المحتوى الفعلي للتطبيق
-  // نستخدم Slot لعرض محتوى المجلد الأول (مثل /app)
   return (
     <AppSettingsProvider>
       <ThemeWrapper>

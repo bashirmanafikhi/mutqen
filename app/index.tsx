@@ -1,135 +1,65 @@
-// // app/index.tsx (Main Screen)
+// import { Text, View } from 'react-native';
+// // تم تعديل المسار لافتراض أن مجلد context هو في المستوى الأعلى بالنسبة لـ app
+// import { useSettings } from '../context/AppSettingContext';
+// // استخدام مكتبة safe-area-context الموصى بها
+// import { SafeAreaView } from 'react-native-safe-area-context';
 
-// import AddNewLearningModal from '@/components/AddNewLearningModal';
-// import LearningList from '@/components/LearningList';
-// import { LearningItemDisplay, UserLearning } from '@/models/QuranModels';
-// import { deleteLearningById, fetchAllLearnings, insertNewLearning } from '@/services/data/QuranQueries';
-// import { Stack } from 'expo-router';
-// import React, { useCallback, useEffect, useState } from 'react';
-// import { Alert, Text, TouchableOpacity, View } from 'react-native';
+// // هذا المكون يمثل الصفحة الرئيسية التي يتم عرضها عبر <Slot />
+// export default function IndexScreen() {
+//   // افترض أن useSettings يعطينا إعدادات المستخدم
+//   // مثل حجم الخط وحالة الوضع الداكن/الفاتح
+//   const { isDark, fontSize } = useSettings();
 
-// // ===============================================
-// // Helper Function (In a real app, this should be a service)
-// // ===============================================
+//   // يتم تحديد حجم الخط ديناميكياً بناءً على إعدادات المستخدم
+//   const dynamicFontSizeStyle = { fontSize: fontSize || 16 };
+  
+//   // لضمان قراءة النص القرآني بشكل أفضل، يتم زيادة حجم الخط وارتفاع السطر (Line Height)
+//   const hafsStyle = {
+//     fontSize: fontSize ? fontSize * 1.6 : 24, 
+//     lineHeight: fontSize ? fontSize * 2.5 : 40
+//   };
 
-// /**
-//  * Converts a raw UserLearning item into a displayable format.
-//  * NOTE: This is a placeholder. In a full app, you'd fetch Sura Name/Aya Numbers from DB.
-//  */
-// const convertToDisplayItem = (item: UserLearning): LearningItemDisplay => {
-//     // Placeholder logic for demonstration
-//     return {
-//         ...item,
-//         display_text: `بداية ID: ${item.start_word_id}, نهاية ID: ${item.end_word_id}`,
-//         sura_name: `سورة رقم ${Math.floor(item.start_word_id / 100)}`, // DEMO derivation
-//         start_aya: Math.floor(item.start_word_id / 10), // DEMO derivation
-//         end_aya: Math.floor(item.end_word_id / 10),     // DEMO derivation
-//     };
-// };
+//   return (
+//     // SafeAreaView لتجنب تداخل المحتوى مع النوتش/شريط النظام
+//     // نستخدم كلاسات Tailwind للألوان والتخطيط
+//     <SafeAreaView className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+//       <View className="p-8 rounded-xl shadow-2xl w-11/12 max-w-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        
+//         {/* العنوان */}
+//         <Text 
+//           className="text-center font-bold mb-4 text-xl text-gray-900 dark:text-gray-100" 
+//         >
+//           مثال خط حفص (Tailwind)
+//         </Text>
 
-// // ===============================================
-// // Main Component
-// // ===============================================
-// export default function Index() {
-//     const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-//     const [learnings, setLearnings] = useState<LearningItemDisplay[]>([]);
-//     const [isLoading, setIsLoading] = useState<boolean>(true);
+//         {/* النص القرآني الذي يستخدم خط حفص 
+//             (يجب أن يكون 'font-uthmanic' معرفاً في tailwind.config.js) */}
+//         <Text 
+//           className="text-center font-uthmanic text-2xl mb-6 text-emerald-700 dark:text-emerald-400" 
+//           style={hafsStyle}
+//         >
+//           بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ 
+//         </Text>
+        
+//         {/* نص عادي */}
+//         <Text 
+//           className="text-center text-gray-700 dark:text-gray-300 mt-2"
+//           style={dynamicFontSizeStyle}
+//         >
+//           هذا مثال لتطبيق خط مخصص على نصوص محددة، بينما يستخدم باقي التطبيق الخط الافتراضي (مثل Calibri). 
+//         </Text>
 
-//     // --- Data Fetching ---
-//     const loadLearnings = useCallback(async () => {
-//         setIsLoading(true);
-//         try {
-//             const rawLearnings = await fetchAllLearnings();
-//             const displayLearnings = rawLearnings.map(convertToDisplayItem);
-//             setLearnings(displayLearnings);
-//         } catch (error) {
-//             console.error("Failed to load learnings:", error);
-//             Alert.alert("خطأ في البيانات", "فشل تحميل المحفوظات من قاعدة البيانات.");
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     }, []);
-
-//     useEffect(() => {
-//         loadLearnings();
-//     }, [loadLearnings]);
-
-//     // --- Learning Creation Handler ---
-//     const handleCreateLearning = async (title: string, startWordId: number, endWordId: number) => {
-//         try {
-//             // 1. Save to Database
-//             const newRawLearning = await insertNewLearning(title, startWordId, endWordId);
-            
-//             // 2. Convert and Update Local State (avoids full refetch)
-//             const newDisplayItem = convertToDisplayItem(newRawLearning);
-            
-//             // Add the new item to the beginning of the list
-//             setLearnings(prevLearnings => [newDisplayItem, ...prevLearnings]); 
-
-//             Alert.alert("نجاح", `تم حفظ "${title}" بنجاح!`);
-
-//         } catch (error) {
-//             console.error("Error creating learning item:", error);
-//             Alert.alert("خطأ", "فشل في حفظ المحفوظ. يرجى المحاولة مرة أخرى.");
-//         }
-//     };
-
-//     // --- Learning Deletion Handler (NEW) ---
-//     const handleDeleteLearning = async (id: number) => {
-//         try {
-//             // 1. Delete from Database
-//             await deleteLearningById(id);
-            
-//             // 2. Update Local State (filter out the deleted item immediately)
-//             setLearnings(prevLearnings => prevLearnings.filter(item => item.id !== id)); 
-
-//             Alert.alert("تم الحذف", "تم حذف المحفوظ بنجاح.");
-
-//         } catch (error) {
-//             console.error("Error deleting learning item:", error);
-//             Alert.alert("خطأ", "فشل في حذف المحفوظ. يرجى المحاولة مرة أخرى.");
-//         }
-//     };
-
-//     return (
-//         <View className="flex-1 bg-gray-50">
-//             {/* 2. Configure the screen options */}
-//             <Stack.Screen 
-//                 options={{ 
-//                     title: 'متقن | حفظ القرأن الكريم'
-//                 }} 
-//             />
-
-            
-//             {/* Header */}
-//             <View className="p-4 border-b border-gray-200 flex-row justify-between items-center bg-indigo-600">
-                
-//                 <Text className="text-2xl font-bold text-white">
-//                     قائمة المحفوظات
-//                 </Text>
-                
-//                 {/* Button to open AddNewLearningModal */}
-//                 <TouchableOpacity
-//                     className="bg-white p-2 rounded-full w-10 h-10 justify-center items-center shadow-lg"
-//                     onPress={() => setIsModalVisible(true)}
-//                 >
-//                     <Text className="text-2xl text-indigo-600 font-bold">إضافة +</Text>
-//                 </TouchableOpacity>
-//             </View>
-
-//             {/* Learning List Display */}
-//             <LearningList
-//                 learnings={learnings}
-//                 isLoading={isLoading}
-//                 onDeleteLearning={handleDeleteLearning}
-//             />
-
-//             {/* Main Modal Component */}
-//             <AddNewLearningModal
-//                 isVisible={isModalVisible}
-//                 onClose={() => setIsModalVisible(false)}
-//                 onCreateLearning={handleCreateLearning} 
-//             />
+//         {/* عرض حالة الثيم وحجم الخط */}
+//         <View className="mt-6 pt-4 border-t border-gray-300 dark:border-gray-600">
+//             <Text 
+//               className="text-center font-medium text-sm text-gray-600 dark:text-gray-400"
+//               style={{ fontSize: fontSize * 0.9 }}
+//             >
+//               الوضع الحالي: {isDark ? 'الداكن (Dark)' : 'الفاتح (Light)'} | حجم الخط: {fontSize}px
+//             </Text>
 //         </View>
-//     );
+
+//       </View>
+//     </SafeAreaView>
+//   );
 // }
