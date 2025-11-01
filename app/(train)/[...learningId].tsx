@@ -143,16 +143,16 @@ export default function RevealCardsTraining() {
     );
 
     return (
-        <View className="flex-1 bg-gray-50 p-8">
+        <View className="flex-1 bg-gray-50 dark:bg-gray-900 p-8">
             <Stack.Screen options={{ title: title, headerBackTitle: "عودة" }} />
 
             {/* 1. Revealed Words List */}
-            <View style={{ flex: 3 }} className="border-b border-gray-200 bg-white">
+            <View style={{ flex: 3 }} className="border-b border-gray-200 dark:border-gray-700 bg-white">
                 <FlatList
                     data={revealedWords.reverse()}
                     renderItem={renderRevealedItem}
                     keyExtractor={(item) => `revealed-${item.id}`}
-                    ListHeaderComponent={<Text className="text-center text-xl font-bold p-3 border-b border-gray-200">الكلمات المكتشفة</Text>}
+                    ListHeaderComponent={<Text className="text-center text-xl font-bold p-3 border-b border-gray-200 dark:border-gray-700 dark:text-white">الكلمات المكتشفة</Text>}
                 />
             </View>
 
@@ -161,7 +161,7 @@ export default function RevealCardsTraining() {
             <GestureHandlerRootView className="flex-1">
 
                 <View className="p-4 justify-end items-center">
-                    <Text className="text-xl font-bold text-center text-gray-700 mb-4">الكلمة التالية ({hiddenWords.length} متبقية)</Text>
+                    <Text className="text-xl font-bold text-center text-gray-700 dark:text-gray-200 dark:bg-gray-900 mb-4">الكلمة التالية ({hiddenWords.length} متبقية)</Text>
 
                     {currentHiddenWord && (
                         <View className="w-full max-w-sm mb-2">
