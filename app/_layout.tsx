@@ -4,6 +4,7 @@ import { Slot, SplashScreen } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { AppSettingsProvider, useSettings } from '../context/AppSettingContext';
 import './globals.css';
 
@@ -60,7 +61,11 @@ export default function RootLayout() {
   return (
     <AppSettingsProvider>
       <ThemeWrapper>
-        <Slot />
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1 }}>
+            <Slot />
+          </SafeAreaView>
+        </SafeAreaProvider>
       </ThemeWrapper>
     </AppSettingsProvider>
   );

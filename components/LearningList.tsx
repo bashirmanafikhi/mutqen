@@ -73,7 +73,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
 
                 {/* Sura/Aya Text */}
                 <Text className="text-base text-indigo-600 dark:text-indigo-400 mb-1">
-                    {item.title} - الآيات: {item.start_word_id} - {item.end_word_id}
+                    الآيات: {item.start_word_id} - {item.end_word_id}
                 </Text>
 
                 {/* Date Text */}
@@ -84,6 +84,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
             <View className="flex-row items-center space-x-2">
 
                 <Link
+                className='m-1'
                     href={{
                         pathname: "/(train)/read/[...learningId]",
                         params: {
@@ -96,7 +97,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                     asChild
                 >
                     <TouchableOpacity
-                        className="bg-emerald-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+                        className="bg-yellow-500 p-2 rounded-lg w-16 justify-center items-center h-10"
                     >
                         <Text className="text-white font-bold text-sm">قراءة</Text>
                     </TouchableOpacity>
@@ -104,6 +105,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
 
                 {/* Train Button */}
                 <Link
+                className='m-1'
                     href={{
                         pathname: "/(train)/[...learningId]",
                         params: {
@@ -122,12 +124,32 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                         <Text className="text-white font-bold text-sm">تدريب</Text>
                     </TouchableOpacity>
                 </Link>
+                
+                <Link
+                className='m-1'
+                    href={{
+                        pathname: "/(train)/cloze/[...learningId]",
+                        params: {
+                            learningId: [item.id.toString()],
+                            startWordId: item.start_word_id.toString(),
+                            endWordId: item.end_word_id.toString(),
+                            title: item.title,
+                        }
+                    }}
+                    asChild
+                >
+                    <TouchableOpacity
+                        className="bg-emerald-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+                    >
+                        <Text className="text-white font-bold text-sm">قراغات</Text>
+                    </TouchableOpacity>
+                </Link>
 
                 {/* Delete Button */}
                 <TouchableOpacity
                     onPress={() => confirmDelete(item)}
                     // Delete button background remains red
-                    className="bg-red-500 p-2 rounded-lg w-16 justify-center items-center h-10"
+                    className="m-1 bg-red-500 p-2 rounded-lg w-16 justify-center items-center h-10"
                 >
                     <Text className="text-white font-bold text-sm">حذف</Text>
                 </TouchableOpacity>
