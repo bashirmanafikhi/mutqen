@@ -5,6 +5,7 @@ import { UserLearning } from '@/models/QuranModels';
 import { Link } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Alert, FlatList, ListRenderItemInfo, Text, TouchableOpacity, View } from 'react-native';
+import QuranProgressBar from './QuranProgressBar';
 
 // ===============================================
 // Interfaces
@@ -62,10 +63,12 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
     };
 
     // --- Render List Item ---
-    const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
-        // 🌟 Apply dark mode to list item background and border 🌟
-        <View className="flex-row justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
+    // 🌟 Apply dark mode to list item background and border 🌟
+    <View className="flex-col p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
 
+        {/* Top Row: Learning Details & Action Buttons */}
+        <View className="flex-row justify-between items-center mb-4">
             {/* Learning Details (Main Content) */}
             <View className="flex-1 mr-4">
                 {/* Title Text */}
@@ -84,7 +87,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
             <View className="flex-row items-center space-x-2">
 
                 <Link
-                className='m-1'
+                    className='m-1'
                     href={{
                         pathname: "/(train)/read/[...learningId]",
                         params: {
@@ -105,7 +108,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
 
                 {/* Train Button */}
                 <Link
-                className='m-1'
+                    className='m-1'
                     href={{
                         pathname: "/(train)/cards/[...learningId]",
                         params: {
@@ -124,9 +127,9 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                         <Text className="text-white font-bold text-sm">تدريب</Text>
                     </TouchableOpacity>
                 </Link>
-                
+
                 <Link
-                className='m-1'
+                    className='m-1'
                     href={{
                         pathname: "/(train)/cloze/[...learningId]",
                         params: {
@@ -155,9 +158,14 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                 </TouchableOpacity>
 
             </View>
-
         </View>
-    );
+
+        <View className="w-full">
+            <QuranProgressBar firstWordId={item.start_word_id} lastWordId={item.end_word_id} />
+        </View>
+
+    </View>
+);
 
     // --- Main List ---
     return (

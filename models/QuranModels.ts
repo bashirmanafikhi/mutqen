@@ -10,6 +10,10 @@
 export interface Surah {
   id: number;
   name: string;
+  name_without_tashkeel: string;
+  page_id: number;
+  start_word_id: number;
+  end_word_id: number;
   aya_count: number;
   revelation_place: string;
 }
@@ -69,6 +73,17 @@ export interface UserProgress {
     ease_factor: number; // usually starts at 2.5
     next_review_date: string; // ISO date string
     last_review_date: string; // ISO date string
+    last_successful_date: string | null; // ISO date string
+    /*
+      0 -> (not learned)
+      1 -> (weak)
+      2 -> (fair)
+      3 -> (good)
+      4 -> (mastered
+    */
+    memory_tier: number;
+    lapses: number;
+    notes: string | null;
 }
 
 /**

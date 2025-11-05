@@ -7,7 +7,7 @@ import * as SQLite from "expo-sqlite";
 // =============================
 // Constants
 // =============================
-const DB_NAME = "quran_database_v3.db";
+const DB_NAME = "quran_database_v5.db";
 const DB_PATH = `${FileSystem.documentDirectory}SQLite/${DB_NAME}`;
 
 // =============================

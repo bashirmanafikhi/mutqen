@@ -4,6 +4,7 @@ import { Surah } from '@/models/QuranModels';
 import { fetchAllSurahs } from '@/services/data/QuranQueries';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import QuranProgressBar from './QuranProgressBar';
 
 // ===============================================
 // Interfaces
@@ -49,25 +50,31 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
   };
 
   const renderItem = ({ item }: ListRenderItemInfo<Surah>) => (
-    <TouchableOpacity
-      className="flex-row justify-between items-center p-3 border-b border-gray-200 active:bg-gray-100"
-      onPress={() => handleSelect(item)}
-    >
-      {/* Right Section: Number and Name */}
+  <TouchableOpacity
+    className="flex-col p-3 border-b border-gray-200 active:bg-gray-100"
+    onPress={() => handleSelect(item)}
+  >
+    {/* Top Row: Number and Name */}
+    <View className="flex-row justify-between items-center">
       <View className="flex-row items-center">
         <Text className="text-lg text-blue-600 font-bold ml-3 w-8 text-center">{item.id}</Text>
         <Text className="text-xl font-arabic font-semibold">{item.name}</Text>
       </View>
 
-      {/* Left Section: Info */}
       <View className="flex-row text-right">
         <Text className="text-sm text-gray-500 mr-2">{item.aya_count} آية</Text>
         <Text className={`text-sm font-medium ${item.revelation_place === 'مدنيه' ? 'text-blue-500' : 'text-green-500'}`}>
           {item.revelation_place}
         </Text>
       </View>
-    </TouchableOpacity>
-  );
+    </View>
+
+    {/* Bottom Row: Progress Bar */}
+    <View className="mt-3">
+      <QuranProgressBar firstWordId={item.start_word_id} lastWordId={item.end_word_id} />
+    </View>
+  </TouchableOpacity>
+);
 
   return (
     <Modal

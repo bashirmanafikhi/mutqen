@@ -1,6 +1,6 @@
 // src/services/data/QuranQueries.ts
 
-import { QuranJuz, QuranPage, QuranWord, Surah, UserLearning, UserProgress } from "../../models/QuranModels";
+import { QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
 import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 
 // =============================
@@ -10,7 +10,7 @@ import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 export async function fetchAllSurahs(): Promise<Surah[]> {
   const database = await getDb();
   const query = `
-    SELECT id, name, aya_count, revelation_place 
+    SELECT id, name, name_without_tashkeel, page_id, start_word_id, end_word_id, aya_count, revelation_place 
     FROM quran_suras 
     ORDER BY id ASC;
   `;
@@ -188,71 +188,75 @@ export async function fetchAllJuzs(): Promise<QuranJuz[]> {
     }
 }
 
-// =============================
-// Progress Queries (NEW)
-// =============================
 
-/**
- * Fetches progress data for a specific word.
- */
-export async function fetchProgressByWordId(wordId: number): Promise<UserProgress | null> {
-    const database = await getDb();
-    const query = `
-        SELECT word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date 
-        FROM user_progress 
-        WHERE word_id = ?;
-    `;
-    try {
-        return await database.getFirstAsync<UserProgress>(query, [wordId]);
-    } catch (error) {
-        console.error(`❌ Error fetching progress for word ${wordId}:`, error);
-        return null; // Return null on error
-    }
-}
 
-/**
- * Inserts or updates the progress of a word.
- */
-export async function upsertProgress(progress: UserProgress): Promise<void> {
-    const database = await getDb();
+
+///  Moved to SpacedRepetitionService.ts
+// // =============================
+// // Progress Queries (NEW)
+// // =============================
+
+// /**
+//  * Fetches progress data for a specific word.
+//  */
+// export async function fetchProgressByWordId(wordId: number): Promise<UserProgress | null> {
+//     const database = await getDb();
+//     const query = `
+//         SELECT word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date 
+//         FROM user_progress 
+//         WHERE word_id = ?;
+//     `;
+//     try {
+//         return await database.getFirstAsync<UserProgress>(query, [wordId]);
+//     } catch (error) {
+//         console.error(`❌ Error fetching progress for word ${wordId}:`, error);
+//         return null; // Return null on error
+//     }
+// }
+
+// /**
+//  * Inserts or updates the progress of a word.
+//  */
+// export async function upsertProgress(progress: UserProgress): Promise<void> {
+//     const database = await getDb();
     
-    // Check if the record exists
-    const existing = await fetchProgressByWordId(progress.word_id);
+//     // Check if the record exists
+//     const existing = await fetchProgressByWordId(progress.word_id);
 
-    if (existing) {
-        // UPDATE
-        const updateQuery = `
-            UPDATE user_progress SET 
-                current_interval = ?, 
-                review_count = ?, 
-                ease_factor = ?, 
-                next_review_date = ?, 
-                last_review_date = ?
-            WHERE word_id = ?;
-        `;
-        await database.runAsync(updateQuery, [
-            progress.current_interval,
-            progress.review_count,
-            progress.ease_factor,
-            progress.next_review_date,
-            progress.last_review_date,
-            progress.word_id,
-        ]);
+//     if (existing) {
+//         // UPDATE
+//         const updateQuery = `
+//             UPDATE user_progress SET 
+//                 current_interval = ?, 
+//                 review_count = ?, 
+//                 ease_factor = ?, 
+//                 next_review_date = ?, 
+//                 last_review_date = ?
+//             WHERE word_id = ?;
+//         `;
+//         await database.runAsync(updateQuery, [
+//             progress.current_interval,
+//             progress.review_count,
+//             progress.ease_factor,
+//             progress.next_review_date,
+//             progress.last_review_date,
+//             progress.word_id,
+//         ]);
         
-    } else {
-        // INSERT
-        const insertQuery = `
-            INSERT INTO user_progress 
-            (word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date)
-            VALUES (?, ?, ?, ?, ?, ?);
-        `;
-        await database.runAsync(insertQuery, [
-            progress.word_id,
-            progress.current_interval,
-            progress.review_count,
-            progress.ease_factor,
-            progress.next_review_date,
-            progress.last_review_date,
-        ]);
-    }
-}
+//     } else {
+//         // INSERT
+//         const insertQuery = `
+//             INSERT INTO user_progress 
+//             (word_id, current_interval, review_count, ease_factor, next_review_date, last_review_date)
+//             VALUES (?, ?, ?, ?, ?, ?);
+//         `;
+//         await database.runAsync(insertQuery, [
+//             progress.word_id,
+//             progress.current_interval,
+//             progress.review_count,
+//             progress.ease_factor,
+//             progress.next_review_date,
+//             progress.last_review_date,
+//         ]);
+//     }
+// }

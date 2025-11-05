@@ -2,8 +2,8 @@
 
 import WordCardComponent from '@/components/WordCard';
 import { QuranWord, WordCard } from '@/models/QuranModels';
-import { fetchProgressByWordId, fetchWordsByRange, upsertProgress } from '@/services/data/QuranQueries';
-import { getUpdatedProgress } from '@/services/SpacedRepetitionService';
+import { fetchWordsByRange } from '@/services/data/QuranQueries';
+import { fetchProgressByWordIdDb, getUpdatedProgress, upsertProgressDb } from '@/services/SpacedRepetitionService';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
@@ -88,14 +88,14 @@ export default function RevealCardsTraining() {
     const updateWordProgress = useCallback(async (wordId: number, quality: number, status: 'correct' | 'incorrect') => {
         try {
             // 1. Fetch current progress
-            const currentProgress = await fetchProgressByWordId(wordId);
+            const currentProgress = await fetchProgressByWordIdDb(wordId);
 
             // 2. Calculate new progress using SRS service
             const newProgress = getUpdatedProgress(currentProgress, quality);
             newProgress.word_id = wordId; // Ensure ID is set
 
             // 3. Upsert to database
-            await upsertProgress(newProgress);
+            await upsertProgressDb(newProgress);
 
             // 4. Update UI state: Mark as revealed and set status
             setAllWords(prev => prev.map(word => {
@@ -112,8 +112,9 @@ export default function RevealCardsTraining() {
 
     // --- Handlers for WordCard (No change) ---
 
-    const handleReveal = (wordId: number) => {
-        handleSwipeAction(wordId, true); // Treat reveal as correct answer
+    const handleReveal = (wordId: number, quality: number) => {
+        const status = quality > 2.5 ? 'correct' : 'incorrect';
+        updateWordProgress(wordId, quality, status);
     };
 
     const handleProgressConfirmation = (wordId: number, isCorrect: boolean) => {

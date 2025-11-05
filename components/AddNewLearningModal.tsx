@@ -84,8 +84,9 @@ export default function AddNewLearningModal({ isVisible, onClose, onCreateLearni
 
                         <OptionButton title="تحديد بالـسورة" onPress={() => setActiveModal(ActiveModal.Surah)} />
                         <OptionButton title="تحديد بالـجزء (Juz)" onPress={() => setActiveModal(ActiveModal.Juz)} />
-                        <OptionButton title="تحديد بالـالحزب (Hizb)" onPress={() => Alert.alert('قريباً', 'قريباً')} />
+                        <OptionButton title="تحديد بالحزب (Hizb)" onPress={() => Alert.alert('قريباً', 'هذه الميزة سوف تعرض جميع الأحزاب وارباع الأحزاب لإختيار ربع ربع')} />
                         <OptionButton title="تحديد بالـصفحة" onPress={() => setActiveModal(ActiveModal.Page)} />
+                        <OptionButton title="تحديد مخصص" onPress={() => Alert.alert('قريباً', 'هذه الميزة تجعلك تحدد نطاق آيات مخصص من اية فلان الى اية فلان')} />
                     </ScrollView>
 
                     {/* Sub-Modals */}
