@@ -45,6 +45,50 @@ module.exports = {
         accent: {
           DEFAULT: '#10b981',
         },
+        app: {
+          bg: {
+            light: '#F9FAFB',
+            dark: '#0F172A',
+          },
+          surface: {
+            light: '#FFFFFF',
+            dark: '#1E293B',
+          },
+          text: {
+            primary: {
+              light: '#111827',
+              dark: '#F1F5F9',
+            },
+            secondary: {
+              light: '#6B7280',
+              dark: '#94A3B8',
+            },
+          },
+          border: {
+            light: '#E5E7EB',
+            dark: '#334155',
+          },
+          primary: {
+            light: '#6366F1',
+            dark: '#818CF8',
+          },
+          success: {
+            light: '#10B981',
+            dark: '#34D399',
+          },
+          warning: {
+            light: '#F59E0B',
+            dark: '#FBBF24',
+          },
+          error: {
+            light: '#EF4444',
+            dark: '#F87171',
+          },
+          info: {
+            light: '#3B82F6',
+            dark: '#60A5FA',
+          },
+        },
       },
     },
   },

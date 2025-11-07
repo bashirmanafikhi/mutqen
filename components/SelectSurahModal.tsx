@@ -1,33 +1,34 @@
-// src/components/SelectSurahModal.tsx
-
+import { useSettings } from '@/context/AppSettingContext';
 import { Surah } from '@/models/QuranModels';
 import { fetchAllSurahs } from '@/services/data/QuranQueries';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, ListRenderItemInfo, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItemInfo,
+  Modal,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import QuranProgressBar from './QuranProgressBar';
 
-// ===============================================
-// Interfaces
-// ===============================================
 interface SurahModalProps {
   isVisible: boolean;
   onClose: () => void;
-  // Now returns the full Surah object to the parent
-  onSelectSurah: (surah: Surah) => void; 
+  onSelectSurah: (surah: Surah) => void;
 }
 
-// ===============================================
-// Component
-// ===============================================
 export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: SurahModalProps) {
-  
+  const { isDark } = useSettings();
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function loadSurahs() {
-      if (surahs.length > 0) return; // Optimization: only fetch once
-      
+      if (surahs.length > 0) return;
+
       try {
         const data: Surah[] = await fetchAllSurahs();
         setSurahs(data);
@@ -37,77 +38,79 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
         setIsLoading(false);
       }
     }
-    
-    // Load data when the component is mounted for the first time
-    if (isVisible && surahs.length === 0) {
-      loadSurahs();
-    }
+
+    if (isVisible && surahs.length === 0) loadSurahs();
   }, [isVisible]);
 
   const handleSelect = (item: Surah) => {
-    onSelectSurah(item); // Pass the full object
-    onClose(); 
+    onSelectSurah(item);
+    onClose();
   };
 
   const renderItem = ({ item }: ListRenderItemInfo<Surah>) => (
-  <TouchableOpacity
-    className="flex-col p-3 border-b border-gray-200 active:bg-gray-100"
-    onPress={() => handleSelect(item)}
-  >
-    {/* Top Row: Number and Name */}
-    <View className="flex-row justify-between items-center">
-      <View className="flex-row items-center">
-        <Text className="text-lg text-blue-600 font-bold ml-3 w-8 text-center">{item.id}</Text>
-        <Text className="text-xl font-semibold">{item.name}</Text>
+    <TouchableOpacity
+      onPress={() => handleSelect(item)}
+      activeOpacity={0.85}
+      className={`flex-col p-4 rounded-2xl mb-3 shadow-sm border ${
+        isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
+      }`}
+    >
+      <View className="flex-row justify-between items-center">
+        <View className="flex-row items-center">
+          <Text className={`text-lg font-bold w-8 text-center ${isDark ? 'text-blue-300' : 'text-blue-600'}`}>
+            {item.id}
+          </Text>
+          <Text className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+            {item.name}
+          </Text>
+        </View>
+
+        <View className="flex-row text-right">
+          <Text className={`text-sm mr-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.aya_count} آية</Text>
+          <Text
+            className={`text-sm font-medium ${
+              item.revelation_place === 'مدنيه'
+                ? isDark ? 'text-blue-400' : 'text-blue-500'
+                : isDark ? 'text-green-400' : 'text-green-500'
+            }`}
+          >
+            {item.revelation_place}
+          </Text>
+        </View>
       </View>
 
-      <View className="flex-row text-right">
-        <Text className="text-sm text-gray-500 mr-2">{item.aya_count} آية</Text>
-        <Text className={`text-sm font-medium ${item.revelation_place === 'مدنيه' ? 'text-blue-500' : 'text-green-500'}`}>
-          {item.revelation_place}
-        </Text>
+      <View className="mt-3">
+        <QuranProgressBar firstWordId={item.first_word_id} lastWordId={item.last_word_id} />
       </View>
-    </View>
-
-    {/* Bottom Row: Progress Bar */}
-    <View className="mt-3">
-      <QuranProgressBar firstWordId={item.first_word_id} lastWordId={item.last_word_id} />
-    </View>
-  </TouchableOpacity>
-);
+    </TouchableOpacity>
+  );
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
+    <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
       <SafeAreaView className="flex-1 bg-black/50">
-        <View className="flex-1 bg-white mt-10 rounded-t-xl overflow-hidden">
+        <View className={`flex-1 mt-16 rounded-t-3xl overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
           
-          {/* Modal Header */}
-          <View className="p-4 border-b border-gray-200 bg-gray-50 flex-row justify-between items-center">
-            <Text className="text-2xl font-bold">قائمة السور</Text>
-            <TouchableOpacity onPress={onClose} className="p-2">
-              <Text className="text-xl font-bold text-red-500">إغلاق</Text>
+          {/* Header */}
+          <View
+            className={`p-5 flex-row justify-between items-center border-b ${
+              isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
+            }`}
+          >
+            <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>قائمة السور</Text>
+            <TouchableOpacity onPress={onClose} className="px-3 py-1">
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">إغلاق</Text>
             </TouchableOpacity>
           </View>
-          
-          {/* List Content */}
+
+          {/* List */}
           {isLoading ? (
             <View className="flex-1 justify-center items-center">
-              <ActivityIndicator size="large" color="#4F46E5" />
-              <Text className="mt-2 text-lg text-gray-500">جاري تحميل السور...</Text>
+              <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
+              <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>جاري تحميل السور...</Text>
             </View>
           ) : (
-            <FlatList<Surah> 
-              data={surahs}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-            />
+            <FlatList<Surah> data={surahs} renderItem={renderItem} keyExtractor={(item) => item.id.toString()} />
           )}
-
         </View>
       </SafeAreaView>
     </Modal>

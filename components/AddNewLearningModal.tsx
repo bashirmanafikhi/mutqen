@@ -1,140 +1,190 @@
 // src/components/AddNewLearningModal.tsx
-
 import { QuranDivision, QuranJuz, QuranPage, Surah } from '@/models/QuranModels';
 import { fetchWordRangeForPage, fetchWordRangeForSurah } from '@/services/data/QuranQueries';
 import React, { useState } from 'react';
-import { Alert, Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+    AccessibilityRole,
+    Alert,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import SelectHizbModal from './SelectHizbModal';
 import SelectJuzModal from './SelectJuzModal';
 import SelectPageModal from './SelectPageModal';
 import SelectSahabaDivisionModal from './SelectSahabaDivisionModal';
 import SelectSurahModal from './SelectSurahModal';
 
-// ==============================
 interface AddNewLearningModalProps {
-    isVisible: boolean;
-    onClose: () => void;
-    onCreateLearning: (title: string, startWordId: number, endWordId: number) => void;
+  isVisible: boolean;
+  onClose: () => void;
+  onCreateLearning: (title: string, startWordId: number, endWordId: number) => void;
 }
 
 enum ActiveModal {
-    None,
-    Surah,
-    Page,
-    Juz,
-    Hizb,
-    SahabaDivision,
+  None,
+  Surah,
+  Page,
+  Juz,
+  Hizb,
+  SahabaDivision,
 }
-// ==============================
 
-export default function AddNewLearningModal({ isVisible, onClose, onCreateLearning }: AddNewLearningModalProps) {
-    const [activeModal, setActiveModal] = useState<ActiveModal>(ActiveModal.None);
+export default function AddNewLearningModal({
+  isVisible,
+  onClose,
+  onCreateLearning,
+}: AddNewLearningModalProps) {
+  const [activeModal, setActiveModal] = useState<ActiveModal>(ActiveModal.None);
 
-    const reset = () => {
-        setActiveModal(ActiveModal.None);
-        onClose();
-    };
+  const reset = () => {
+    setActiveModal(ActiveModal.None);
+    onClose();
+  };
 
-    // Auto-save after selection
-    const finalize = (title: string, start: number, end: number) => {
-        onCreateLearning(title, start, end);
-        reset();
-    };
+  // Auto-save after selection
+  const finalize = (title: string, start: number, end: number) => {
+    onCreateLearning(title, start, end);
+    reset();
+  };
 
-    const handleSelectSurah = async (surah: Surah) => {
-        setActiveModal(ActiveModal.None);
-        const range = await fetchWordRangeForSurah(surah.id);
-        if (!range) return;
-        finalize(surah.name, range.start, range.end);
-    };
+  const handleSelectSurah = async (surah: Surah) => {
+    setActiveModal(ActiveModal.None);
+    try {
+      const range = await fetchWordRangeForSurah(surah.id);
+      if (!range) return;
+      finalize(surah.name, range.start, range.end);
+    } catch (err) {
+      console.error('fetchWordRangeForSurah error', err);
+      Alert.alert('خطأ', 'تعذّر جلب نطاق السورة. حاول مرة أخرى.');
+    }
+  };
 
-    const handleSelectPage = async (page: QuranPage) => {
-        setActiveModal(ActiveModal.None);
-        const range = await fetchWordRangeForPage(page.id);
-        if (!range) return;
+  const handleSelectPage = async (page: QuranPage) => {
+    setActiveModal(ActiveModal.None);
+    try {
+      const range = await fetchWordRangeForPage(page.id);
+      if (!range) return;
+      const title = `الصفحة ${page.id}`;
+      finalize(title, range.start, range.end);
+    } catch (err) {
+      console.error('fetchWordRangeForPage error', err);
+      Alert.alert('خطأ', 'تعذّر جلب نطاق الصفحة. حاول مرة أخرى.');
+    }
+  };
 
-        const title = `الصفحة ${page.id}`;
-        finalize(title, range.start, range.end);
-    };
+  const handleSelectJuz = (juz: QuranJuz) => {
+    finalize(juz.name, juz.first_word_id, juz.last_word_id);
+  };
 
-    const handleSelectJuz = (juz: QuranJuz) => {
-        finalize(juz.name, juz.first_word_id, juz.last_word_id);
-    };
-    
-    const handleSelectHizb = (hizb: QuranDivision) => {
-        finalize(hizb.name, hizb.first_word_id, hizb.last_word_id);
-    };
-    
-    const handleSelectSahabaDivision = (division: QuranDivision) => {
-        finalize(division.name, division.first_word_id, division.last_word_id);
-    };
+  const handleSelectHizb = (hizb: QuranDivision) => {
+    finalize(hizb.name, hizb.first_word_id, hizb.last_word_id);
+  };
 
-    const OptionButton = ({ title, onPress }: { title: string; onPress: () => void }) => (
-        <TouchableOpacity
-            className="p-4 bg-indigo-50 dark:bg-gray-800 border border-indigo-200 dark:border-gray-700 rounded-lg mb-3"
-            onPress={onPress}
-        >
-            <Text className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 text-center">{title}</Text>
-        </TouchableOpacity>
-    );
+  const handleSelectSahabaDivision = (division: QuranDivision) => {
+    finalize(division.name, division.first_word_id, division.last_word_id);
+  };
 
-    return (
-        <Modal animationType="slide" transparent visible={isVisible} onRequestClose={reset}>
-            <SafeAreaView className="flex-1 bg-black/50 dark:bg-black/60">
-                <View className="flex-1 bg-white dark:bg-gray-900 mt-10 rounded-t-xl overflow-hidden">
+  const OptionButton = ({
+    title,
+    onPress,
+    accessibleLabel,
+  }: {
+    title: string;
+    onPress: () => void;
+    accessibleLabel?: string;
+  }) => (
+    <TouchableOpacity
+      accessibilityRole={'button' as AccessibilityRole}
+      accessibilityLabel={accessibleLabel ?? title}
+      onPress={onPress}
+      className="w-full p-4 rounded-lg mb-3 border border-app-border-light dark:border-app-border-dark bg-app-surface-light dark:bg-app-surface-dark"
+      activeOpacity={0.8}
+    >
+      <Text className="text-center text-lg font-semibold text-app-primary-light dark:text-app-primary-dark">
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 
-                    {/* Header */}
-                    <View className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-row justify-between items-center">
-                        <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">إضافة محفوظ جديد</Text>
-                        <TouchableOpacity onPress={reset} className="p-2">
-                            <Text className="text-xl font-bold text-red-500">إلغاء</Text>
-                        </TouchableOpacity>
-                    </View>
+  return (
+    <Modal animationType="fade" transparent visible={isVisible} onRequestClose={reset}>
+      <SafeAreaView className="flex-1">
+        {/* Overlay */}
+        <View className="absolute inset-0 bg-black/40" />
 
-                    <ScrollView className="p-4 flex-1">
-                        <Text className="text-center text-xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">تحديد النطاق</Text>
+        {/* Modal sheet */}
+        <View className="flex-1 justify-center">
+          <View className="mx-4 mb-6 rounded-2xl overflow-hidden shadow-lg bg-app-surface-light dark:bg-app-surface-dark border border-app-border-light dark:border-app-border-dark">
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-5 py-4 border-b border-app-border-light dark:border-app-border-dark bg-app-bg-light dark:bg-app-bg-dark">
+              <Text className="text-xl font-bold text-app-text-primary-light dark:text-app-text-primary-dark">
+                إضافة حفظ جديد
+              </Text>
 
-                        <OptionButton title="السور" onPress={() => setActiveModal(ActiveModal.Surah)} />
-                        <OptionButton title="الأجزاء" onPress={() => setActiveModal(ActiveModal.Juz)} />
-                        <OptionButton title="الأحزاب" onPress={() => setActiveModal(ActiveModal.Hizb)} />
-                        <OptionButton title="تحزيب الصحابة" onPress={() => setActiveModal(ActiveModal.SahabaDivision)} />
-                        <OptionButton title="الصفحات" onPress={() => setActiveModal(ActiveModal.Page)} />
-                        <OptionButton title="تحديد مخصص" onPress={() => Alert.alert('قريباً', 'هذه الميزة تجعلك تحدد نطاق آيات مخصص من اية فلان الى اية فلان')} />
-                            
-                    </ScrollView>
+              <TouchableOpacity onPress={reset} accessibilityRole={'button' as AccessibilityRole} className="p-2">
+                <Text className="text-sm font-semibold text-app-error-light dark:text-app-error-dark">إلغاء</Text>
+              </TouchableOpacity>
+            </View>
 
-                    {/* Sub-Modals */}
-                    <SelectSurahModal
-                        isVisible={activeModal === ActiveModal.Surah}
-                        onClose={() => setActiveModal(ActiveModal.None)}
-                        onSelectSurah={handleSelectSurah}
-                    />
+            {/* Content */}
+            <ScrollView contentContainerStyle={{ padding: 16 }} className="bg-app-surface-light dark:bg-app-surface-dark">
 
-                    <SelectPageModal
-                        isVisible={activeModal === ActiveModal.Page}
-                        onClose={() => setActiveModal(ActiveModal.None)}
-                        onSelectPage={handleSelectPage}
-                    />
+              <OptionButton title="السور" onPress={() => setActiveModal(ActiveModal.Surah)} />
+              <OptionButton title="الأجزاء (جزء)" onPress={() => setActiveModal(ActiveModal.Juz)} />
+              <OptionButton title="الأحزاب" onPress={() => setActiveModal(ActiveModal.Hizb)} />
+              <OptionButton title="تحزيب الصحابة" onPress={() => setActiveModal(ActiveModal.SahabaDivision)} />
+              <OptionButton title="الصفحات" onPress={() => setActiveModal(ActiveModal.Page)} />
 
-                    <SelectJuzModal
-                        isVisible={activeModal === ActiveModal.Juz}
-                        onClose={() => setActiveModal(ActiveModal.None)}
-                        onSelectJuz={handleSelectJuz}
-                    />
-                    
-                    <SelectHizbModal
-                        isVisible={activeModal === ActiveModal.Hizb}
-                        onClose={() => setActiveModal(ActiveModal.None)}
-                        onSelectHizb={handleSelectHizb}
-                    />
-                    
-                    <SelectSahabaDivisionModal
-                        isVisible={activeModal === ActiveModal.SahabaDivision}
-                        onClose={() => setActiveModal(ActiveModal.None)}
-                        onSelectDivision={handleSelectSahabaDivision}
-                    />
-                </View>
-            </SafeAreaView>
-        </Modal>
-    );
+              <TouchableOpacity
+                onPress={() => Alert.alert('قريباً', 'ميزة التحديد المخصص ستكون متاحة قريبًا')}
+                className="w-full p-4 rounded-lg mb-3 border border-app-border-light dark:border-app-border-dark bg-app-bg-light dark:bg-app-bg-dark"
+                activeOpacity={0.8}
+                accessibilityRole={'button' as AccessibilityRole}
+                accessibilityLabel="تحديد مخصص"
+              >
+                <Text className="text-center text-base font-semibold text-app-text-secondary-light dark:text-app-text-secondary-dark">
+                  تحديد مخصص (قريبًا)
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+
+        {/* Sub-modals for selections */}
+        <SelectSurahModal
+          isVisible={activeModal === ActiveModal.Surah}
+          onClose={() => setActiveModal(ActiveModal.None)}
+          onSelectSurah={handleSelectSurah}
+        />
+
+        <SelectPageModal
+          isVisible={activeModal === ActiveModal.Page}
+          onClose={() => setActiveModal(ActiveModal.None)}
+          onSelectPage={handleSelectPage}
+        />
+
+        <SelectJuzModal
+          isVisible={activeModal === ActiveModal.Juz}
+          onClose={() => setActiveModal(ActiveModal.None)}
+          onSelectJuz={handleSelectJuz}
+        />
+
+        <SelectHizbModal
+          isVisible={activeModal === ActiveModal.Hizb}
+          onClose={() => setActiveModal(ActiveModal.None)}
+          onSelectHizb={handleSelectHizb}
+        />
+
+        <SelectSahabaDivisionModal
+          isVisible={activeModal === ActiveModal.SahabaDivision}
+          onClose={() => setActiveModal(ActiveModal.None)}
+          onSelectDivision={handleSelectSahabaDivision}
+        />
+      </SafeAreaView>
+    </Modal>
+  );
 }
