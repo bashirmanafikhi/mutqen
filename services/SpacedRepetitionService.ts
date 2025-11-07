@@ -189,7 +189,6 @@ export async function upsertProgressDb(progress: UserProgress): Promise<void> {
     const existing = await fetchProgressByWordIdDb(progress.word_id);
 
     if (existing) {
-      console.debug(`Updating progress for word_id ${progress.word_id}`);
       const updateQuery = `
         UPDATE user_progress SET
           current_interval = ?,
@@ -216,7 +215,6 @@ export async function upsertProgressDb(progress: UserProgress): Promise<void> {
         progress.word_id
       ]);
     } else {
-      console.debug(`Inserting progress for word_id ${progress.word_id}`);
       const insertQuery = `
         INSERT INTO user_progress
         (word_id, current_interval, review_count, lapses, ease_factor,

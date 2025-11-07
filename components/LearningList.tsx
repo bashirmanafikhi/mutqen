@@ -74,11 +74,6 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
                 {/* Title Text */}
                 <Text className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{item.title}</Text>
 
-                {/* Sura/Aya Text */}
-                <Text className="text-base text-indigo-600 dark:text-indigo-400 mb-1">
-                    الآيات: {item.first_word_id} - {item.last_word_id}
-                </Text>
-
                 {/* Date Text */}
                 <Text className="text-xs text-gray-400 dark:text-gray-500 mt-1 self-start">{new Date(item.created_at).toLocaleDateString()}</Text>
             </View>

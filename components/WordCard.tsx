@@ -6,7 +6,7 @@ import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.2;
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.1; // 10% of screen width
 
 interface WordCardProps {
     card: WordCard;
@@ -45,7 +45,7 @@ const WordCardComponent: React.FC<WordCardProps> = ({ card, onReveal, onSwipeAct
             if (isSwipedRight || isSwipedLeft) {
                 const isCorrect = isSwipedRight;
                 setOpacity(0);
-                setTimeout(() => onSwipeAction(card.id, isCorrect), 300);
+                setTimeout(() => onSwipeAction(card.id, isCorrect), 50);
             } else {
                 setTranslateX(0);
             }
@@ -69,7 +69,7 @@ const WordCardComponent: React.FC<WordCardProps> = ({ card, onReveal, onSwipeAct
         <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
             <View style={{ transform: [{ translateX }], opacity }} className="p-2">
                 <TouchableOpacity onPress={handleRevealPress} className={getCardStyles()} disabled={card.isRevealed}>
-                    <Text className={`text-4xl font-arabic font-bold ${card.isRevealed ? 'text-gray-900 dark:text-gray-100' : 'text-indigo-600 dark:text-indigo-400'}`}>{cardContent}</Text>
+                    <Text className={`text-4xl font-bold ${card.isRevealed ? 'text-gray-900 dark:text-gray-100' : 'text-indigo-600 dark:text-indigo-400'}`}>{cardContent}</Text>
                     {!card.isRevealed && (
                         <Text className="text-sm text-gray-600 dark:text-gray-300 mt-2">{timer}</Text>
                     )}

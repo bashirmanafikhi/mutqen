@@ -58,7 +58,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
     <View className="flex-row justify-between items-center">
       <View className="flex-row items-center">
         <Text className="text-lg text-blue-600 font-bold ml-3 w-8 text-center">{item.id}</Text>
-        <Text className="text-xl font-arabic font-semibold">{item.name}</Text>
+        <Text className="text-xl font-semibold">{item.name}</Text>
       </View>
 
       <View className="flex-row text-right">

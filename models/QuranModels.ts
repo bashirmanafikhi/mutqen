@@ -68,7 +68,7 @@ export interface UserLearning {
  */
 export interface UserProgress {
     word_id: number;
-    current_interval: number; // in days
+    current_interval: number; // in seconds
     review_count: number;
     ease_factor: number; // usually starts at 2.5
     next_review_date: string; // ISO date string
@@ -102,4 +102,12 @@ export interface AyaTafseer {
   sura_id: number;
   aya_number: number;
   text: string;
+}
+
+export interface QuranDivision {
+  id: number;
+  type: string;       // "hizb" or "quarter-hizb"
+  name: string;       // e.g. "Quarter 1 of Hizb 1"
+  first_word_id: number;
+  last_word_id: number;
 }

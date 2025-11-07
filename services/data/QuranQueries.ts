@@ -1,6 +1,6 @@
 // src/services/data/QuranQueries.ts
 
-import { AyaTafseer, QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
+import { AyaTafseer, QuranDivision, QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
 import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 
 // =============================
@@ -306,6 +306,44 @@ export async function fetchTafseersByRange(
     return await database.getAllAsync<AyaTafseer>(query, [suraId, startAya, endAya]);
   } catch (error) {
     console.error("❌ Error fetching tafseers by range:", error);
+    throw error;
+  }
+}
+
+// =============================
+// Hizb Queries
+// =============================
+export async function fetchAllHizbs(): Promise<QuranDivision[]> {
+  const database = await getDb();
+  const query = `
+      SELECT id, type, name, first_word_id, last_word_id
+      FROM quran_divisions
+      WHERE type IN ('hizb', 'quarter-hizb')
+      ORDER BY id ASC;
+  `;
+  try {
+    return await database.getAllAsync<QuranDivision>(query);
+  } catch (error) {
+    console.error("❌ Error fetching hizbs:", error);
+    throw error;
+  }
+}
+
+// =============================
+// Sahaba Divisions Queries
+// =============================
+export async function fetchAllSahabaDivisions(): Promise<QuranDivision[]> {
+  const database = await getDb();
+  const query = `
+    SELECT id, type, name, first_word_id, last_word_id
+    FROM quran_divisions
+    WHERE type = 'juz'
+    ORDER BY id ASC;
+  `;
+  try {
+    return await database.getAllAsync<QuranDivision>(query);
+  } catch (error) {
+    console.error("❌ Error fetching Sahaba divisions:", error);
     throw error;
   }
 }

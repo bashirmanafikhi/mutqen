@@ -1,5 +1,6 @@
 import { AyaTafseer, QuranWord } from "@/models/QuranModels";
 import { fetchTafseersByRange, fetchWordsByRange } from "@/services/data/QuranQueries";
+import { toArabicNumber } from "@/services/Utilities";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -17,7 +18,7 @@ const groupWordsIntoAyas = (words: QuranWord[]): Aya[] => {
     current += " " + word.text;
 
     if (word.is_end_of_aya) {
-      current += ` ﴿${word.aya_number}﴾ `;
+      current += ` ${toArabicNumber(word.aya_number)} `;
     }
 
     map.set(word.aya_number, current.trim());
