@@ -9,7 +9,7 @@ import AddNewLearningModal from "@/components/AddNewLearningModal";
 import LearningList from "@/components/LearningList";
 import { useSettings } from "@/context/AppSettingContext";
 import { UserLearning } from "@/models/QuranModels";
-import { deleteLearningById, fetchAllLearnings, insertNewLearning } from "@/services/data/QuranQueries";
+import { deleteLearningById, fetchAllLearnings, insertNewLearning } from "@/services/data/learningQueries";
 
 export default function Index() {
   const { isDark } = useSettings();
@@ -44,7 +44,6 @@ export default function Index() {
     try {
       const newItem = await insertNewLearning(title, startWordId, endWordId);
       setLearnings((prev) => [newItem, ...prev]);
-      Alert.alert("تم الحفظ", `تم حفظ "${title}" بنجاح.`);
     } catch (error) {
       console.error("Error creating learning:", error);
       Alert.alert("خطأ", "تعذر حفظ المحفوظ. حاول مجددًا.");
@@ -58,7 +57,6 @@ export default function Index() {
     try {
       await deleteLearningById(id);
       setLearnings((prev) => prev.filter((item) => item.id !== id));
-      Alert.alert("تم الحذف", "تم حذف المحفوظ بنجاح.");
     } catch (error) {
       console.error("Error deleting learning:", error);
       Alert.alert("خطأ", "تعذر حذف المحفوظ.");

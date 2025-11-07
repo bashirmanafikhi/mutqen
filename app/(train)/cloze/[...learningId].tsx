@@ -1,6 +1,7 @@
 // app/(train)/cloze/[...learningId].tsx
 import { QuranWord, UserProgress } from "@/models/QuranModels";
-import { fetchWordsByRange, upsertProgress } from "@/services/data/QuranQueries";
+import { upsertProgressDb } from "@/services/data/userProgressQueries";
+import { fetchWordsByRange } from "@/services/data/wordQueries";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -160,8 +161,12 @@ export default function ClozeTrainerScreen() {
           ease_factor: isCorrect ? 2.5 : 1.3,
           next_review_date: new Date().toISOString(),
           last_review_date: new Date().toISOString(),
+          last_successful_date: null,
+          memory_tier: 0,
+          lapses: 0,
+          notes: null
         };
-        upsertProgress(progress).catch(() => {});
+        upsertProgressDb(progress).catch(() => {});
       }
     } catch {}
 

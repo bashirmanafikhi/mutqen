@@ -5,15 +5,12 @@ import { Slot, SplashScreen } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppSettingsProvider, useSettings } from '../context/AppSettingContext';
 import './globals.css';
 
 SplashScreen.preventAutoHideAsync();
 
-// ---------------------------------------------
-// Theme Wrapper
-// ---------------------------------------------
 function ThemeWrapper({ children }: { children: ReactNode }) {
   const { isDark } = useSettings();
   const { setColorScheme } = useColorScheme();
@@ -29,9 +26,17 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// ---------------------------------------------
-// Root Layout
-// ---------------------------------------------
+// Wrapper لتطبيق safe area فقط في الأسفل
+function BottomSafeAreaWrapper({ children }: { children: ReactNode }) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={{ flex: 1, paddingBottom: insets.bottom }}>
+      {children}
+    </View>
+  );
+}
+
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [fontError, setFontError] = useState<string | null>(null);
@@ -51,13 +56,9 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       }
     }
-
     loadFonts();
   }, []);
 
-  // ---------------------------------------------
-  // Font loading error display
-  // ---------------------------------------------
   if (fontError) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900 p-4">
@@ -67,9 +68,6 @@ export default function RootLayout() {
     );
   }
 
-  // ---------------------------------------------
-  // Font loading spinner
-  // ---------------------------------------------
   if (!fontsLoaded) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
@@ -79,16 +77,13 @@ export default function RootLayout() {
     );
   }
 
-  // ---------------------------------------------
-  // Main App
-  // ---------------------------------------------
   return (
     <AppSettingsProvider>
       <ThemeWrapper>
         <SafeAreaProvider>
-          <SafeAreaView className="flex-1">
+          <BottomSafeAreaWrapper>
             <Slot />
-          </SafeAreaView>
+          </BottomSafeAreaWrapper>
         </SafeAreaProvider>
       </ThemeWrapper>
     </AppSettingsProvider>

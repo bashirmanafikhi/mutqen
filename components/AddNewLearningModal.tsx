@@ -1,16 +1,16 @@
 // src/components/AddNewLearningModal.tsx
 import { QuranDivision, QuranJuz, QuranPage, Surah } from '@/models/QuranModels';
-import { fetchWordRangeForPage, fetchWordRangeForSurah } from '@/services/data/QuranQueries';
+import { fetchWordRangeForPage, fetchWordRangeForSurah } from '@/services/data/wordQueries';
 import React, { useState } from 'react';
 import {
-    AccessibilityRole,
-    Alert,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  AccessibilityRole,
+  Alert,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import SelectHizbModal from './SelectHizbModal';
 import SelectJuzModal from './SelectJuzModal';

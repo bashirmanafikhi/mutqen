@@ -34,7 +34,7 @@ export default function TrainingLayout({ startWordId, endWordId }: { startWordId
       {/* Revealed Words Section */}
       <View
         style={{ height: SCREEN_HEIGHT * 0.55 }}
-        className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-b from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-b-3xl shadow-inner"
+        className="px-4 py-3 border-b border-gray-200 dark:border-gray-700"
       >
         <Text className="text-lg font-bold text-gray-700 dark:text-gray-200 mb-3 text-center">
           الكلمات المكتشفة ({revealedWords.length})
@@ -45,7 +45,7 @@ export default function TrainingLayout({ startWordId, endWordId }: { startWordId
       {/* Hidden Words / Card Area */}
       <GestureHandlerRootView
         style={{ flex: 1 }}
-        className="p-4 justify-center items-center bg-gradient-to-t from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800"
+        className="flex-1 p-4 bg-gray-100 dark:bg-gray-800"
       >
         <HiddenCardArea hiddenWords={hiddenWords} updateProgress={updateProgress} restart={restart} />
       </GestureHandlerRootView>

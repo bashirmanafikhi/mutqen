@@ -1,6 +1,6 @@
 import { useSettings } from '@/context/AppSettingContext';
 import { Surah } from '@/models/QuranModels';
-import { fetchAllSurahs } from '@/services/data/QuranQueries';
+import { fetchAllSurahs } from '@/services/data/surahQueries';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

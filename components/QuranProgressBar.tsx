@@ -1,4 +1,4 @@
-import { computeRangeTierStats } from "@/services/SpacedRepetitionService";
+import { computeRangeTierStats } from "@/services/data/userProgressQueries";
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 

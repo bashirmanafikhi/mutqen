@@ -1,6 +1,6 @@
 import { useSettings } from '@/context/AppSettingContext';
 import { QuranJuz } from '@/models/QuranModels';
-import { fetchAllJuzs } from '@/services/data/QuranQueries';
+import { fetchAllJuzs } from '@/services/data/juzQueries';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

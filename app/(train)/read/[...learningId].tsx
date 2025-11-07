@@ -1,8 +1,9 @@
 // screens/ReadMemorizationScreen.tsx
 import { AyaTafseer, QuranWord } from "@/models/QuranModels";
-import { fetchTafseersByRange, fetchWordsByRange } from "@/services/data/QuranQueries";
+import { fetchTafseersByRange } from "@/services/data/tafseerQueries";
+import { fetchWordsByRange } from "@/services/data/wordQueries";
 import { toArabicNumber } from "@/services/Utilities";
-import { useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -92,14 +93,12 @@ export default function ReadMemorizationScreen() {
   // Main content
   // ---------------------------------------------
   return (
-    <View className="flex-1 bg-white dark:bg-black px-4 pt-6">
-      <Text className="text-center text-3xl font-bold mb-6 text-indigo-700 dark:text-indigo-300">
-        {title}
-      </Text>
+    <View className="flex-1 px-4 pt-6 bg-gray-50 dark:bg-gray-900">
+      <Stack.Screen options={{ title }} />
 
       <ScrollView showsVerticalScrollIndicator={false} className="space-y-4">
         {ayas.map((item) => {
-          const tafseer = tafseers.find((t) => t.aya_number === item.aya_number);
+          const tafseer = tafseers.find((t) => t.aya_number == item.aya_number);
           const isExpanded = expandedAya === item.aya_number;
 
           return (

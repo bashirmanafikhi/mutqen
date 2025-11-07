@@ -1,7 +1,8 @@
 // hooks/useTrainingWords.ts
 import { QuranWord, WordCard } from '@/models/QuranModels';
-import { fetchWordsByRange } from '@/services/data/QuranQueries';
-import { fetchProgressByWordIdDb, getUpdatedProgress, upsertProgressDb } from '@/services/SpacedRepetitionService';
+import { fetchProgressByWordIdDb, upsertProgressDb } from '@/services/data/userProgressQueries';
+import { fetchWordsByRange } from '@/services/data/wordQueries';
+import { getUpdatedProgress } from '@/services/SpacedRepetitionService';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
