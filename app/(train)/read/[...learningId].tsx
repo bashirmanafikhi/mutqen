@@ -1,8 +1,8 @@
-import { QuranWord } from "@/models/QuranModels";
-import { fetchWordsByRange } from "@/services/data/QuranQueries";
+import { AyaTafseer, QuranWord } from "@/models/QuranModels";
+import { fetchTafseersByRange, fetchWordsByRange } from "@/services/data/QuranQueries";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface Aya {
   aya_number: number;
@@ -35,18 +35,37 @@ export default function ReadMemorizationScreen() {
   const title = (params.title as string) || "تلاوة وحفظ";
 
   const [words, setWords] = useState<QuranWord[]>([]);
+  const [tafseers, setTafseers] = useState<AyaTafseer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedAya, setExpandedAya] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const data = await fetchWordsByRange(startWordId, endWordId);
-      setWords(data);
-      setLoading(false);
+      try {
+        const data = await fetchWordsByRange(startWordId, endWordId);
+        setWords(data);
+
+        if (data.length > 0) {
+          const suraId = data[0].sura_id;
+          const firstAya = data[0].aya_number;
+          const lastAya = data[data.length - 1].aya_number;
+          const tafseerData = await fetchTafseersByRange(suraId, firstAya, lastAya);
+          setTafseers(tafseerData);
+        }
+      } catch (err) {
+        console.error("Error loading data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
 
   const ayas = groupWordsIntoAyas(words);
+
+  const toggleAya = (ayaNumber: number) => {
+    setExpandedAya((prev) => (prev === ayaNumber ? null : ayaNumber));
+  };
 
   if (loading) {
     return (
@@ -66,16 +85,35 @@ export default function ReadMemorizationScreen() {
       </Text>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {ayas.map((item) => (
-          <View
-            key={item.aya_number}
-            className="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700"
-          >
-            <Text className="text-right text-2xl leading-loose font-uthmanic text-gray-900 dark:text-gray-100">
-              {item.text}
-            </Text>
-          </View>
-        ))}
+        {ayas.map((item) => {
+          const tafseer = tafseers.find((t) => t.aya_number == item.aya_number);
+          const isExpanded = expandedAya === item.aya_number;
+
+          return (
+            <View
+              key={item.aya_number}
+              className="mb-4 border-b border-gray-200 dark:border-gray-700 pb-2"
+            >
+              <TouchableOpacity onPress={() => toggleAya(item.aya_number)}>
+                <Text className="text-right text-2xl leading-loose font-uthmanic text-gray-900 dark:text-gray-100">
+                  {item.text}
+                </Text>
+
+                <Text className="text-right text-sm text-indigo-600 dark:text-indigo-400 mt-1">
+                  {isExpanded ? "إخفاء التفسير ▲" : "عرض التفسير ▼"}
+                </Text>
+              </TouchableOpacity>
+
+              {isExpanded && tafseer && (
+                <View className="mt-3 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  <Text className="text-right text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+                    {tafseer.text}
+                  </Text>
+                </View>
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );

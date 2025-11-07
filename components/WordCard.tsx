@@ -53,9 +53,7 @@ const WordCardComponent: React.FC<WordCardProps> = ({ card, onReveal, onSwipeAct
     };
 
     const calculateQuality = () => {
-        if (timer >= 4) return 5; // fast reveal
-        if (timer >= 2) return 4; // medium
-        return 3; // slow reveal but still considered good
+        return timer;
     };
 
     const handleRevealPress = () => {

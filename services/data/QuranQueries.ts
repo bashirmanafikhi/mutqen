@@ -1,6 +1,6 @@
 // src/services/data/QuranQueries.ts
 
-import { QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
+import { AyaTafseer, QuranJuz, QuranPage, QuranWord, Surah, UserLearning } from "../../models/QuranModels";
 import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 
 // =============================
@@ -10,7 +10,7 @@ import { getDb } from "../DatabaseConnection"; // Assuming this path is correct
 export async function fetchAllSurahs(): Promise<Surah[]> {
   const database = await getDb();
   const query = `
-    SELECT id, name, name_without_tashkeel, page_id, start_word_id, end_word_id, aya_count, revelation_place 
+    SELECT id, name, name_without_tashkeel, page_id, first_word_id, last_word_id, aya_count, revelation_place 
     FROM quran_suras 
     ORDER BY id ASC;
   `;
@@ -108,7 +108,7 @@ export async function fetchAllPages(): Promise<QuranPage[]> {
 export async function fetchAllLearnings(): Promise<UserLearning[]> {
     const database = await getDb();
     const query = `
-        SELECT id, title, start_word_id, end_word_id, created_at
+        SELECT id, title, first_word_id, last_word_id, created_at
         FROM user_learnings 
         ORDER BY created_at DESC;
     `;
@@ -126,7 +126,7 @@ export async function fetchAllLearnings(): Promise<UserLearning[]> {
 export async function insertNewLearning(title: string, startWordId: number, endWordId: number): Promise<UserLearning> {
     const database = await getDb();
     const query = `
-        INSERT INTO user_learnings (title, start_word_id, end_word_id)
+        INSERT INTO user_learnings (title, first_word_id, last_word_id)
         VALUES (?, ?, ?);
     `;
     try {
@@ -138,7 +138,7 @@ export async function insertNewLearning(title: string, startWordId: number, endW
 
         // Fetch the newly inserted row to get created_at and the actual ID
         const newLearning = await database.getFirstAsync<UserLearning>(
-            `SELECT id, title, start_word_id, end_word_id, created_at FROM user_learnings WHERE id = ?`,
+            `SELECT id, title, first_word_id, last_word_id, created_at FROM user_learnings WHERE id = ?`,
             [result.lastInsertRowId]
         );
 
@@ -260,3 +260,52 @@ export async function fetchAllJuzs(): Promise<QuranJuz[]> {
 //         ]);
 //     }
 // }
+
+
+/**
+ * Fetch tafseer text for a specific sura and aya.
+ */
+export async function fetchTafseerByAya(
+  suraId: number,
+  ayaNumber: number
+): Promise<AyaTafseer | null> {
+  const database = await getDb();
+  const query = `
+    SELECT sura_id, aya_number, text
+    FROM aya_tafseers
+    WHERE sura_id = ? AND aya_number = ?
+    LIMIT 1;
+  `;
+
+  try {
+    const result = await database.getFirstAsync<AyaTafseer>(query, [suraId, ayaNumber]);
+    return result || null;
+  } catch (error) {
+    console.error("❌ Error fetching tafseer by aya:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch tafseers for a range of ayas (useful for lists).
+ */
+export async function fetchTafseersByRange(
+  suraId: number,
+  startAya: number,
+  endAya: number
+): Promise<AyaTafseer[]> {
+  const database = await getDb();
+  const query = `
+    SELECT sura_id, aya_number, text
+    FROM aya_tafseers
+    WHERE sura_id = ? AND aya_number BETWEEN ? AND ?
+    ORDER BY aya_number ASC;
+  `;
+
+  try {
+    return await database.getAllAsync<AyaTafseer>(query, [suraId, startAya, endAya]);
+  } catch (error) {
+    console.error("❌ Error fetching tafseers by range:", error);
+    throw error;
+  }
+}

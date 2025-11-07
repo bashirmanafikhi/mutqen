@@ -76,7 +76,7 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
 
                 {/* Sura/Aya Text */}
                 <Text className="text-base text-indigo-600 dark:text-indigo-400 mb-1">
-                    الآيات: {item.start_word_id} - {item.end_word_id}
+                    الآيات: {item.first_word_id} - {item.last_word_id}
                 </Text>
 
                 {/* Date Text */}
@@ -92,8 +92,8 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
                         pathname: "/(train)/read/[...learningId]",
                         params: {
                             learningId: [item.id.toString()],
-                            startWordId: item.start_word_id.toString(),
-                            endWordId: item.end_word_id.toString(),
+                            startWordId: item.first_word_id.toString(),
+                            endWordId: item.last_word_id.toString(),
                             title: item.title,
                         }
                     }}
@@ -113,8 +113,8 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
                         pathname: "/(train)/cards/[...learningId]",
                         params: {
                             learningId: [item.id.toString()],
-                            startWordId: item.start_word_id.toString(),
-                            endWordId: item.end_word_id.toString(),
+                            startWordId: item.first_word_id.toString(),
+                            endWordId: item.last_word_id.toString(),
                             title: item.title,
                         }
                     }}
@@ -134,8 +134,8 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
                         pathname: "/(train)/cloze/[...learningId]",
                         params: {
                             learningId: [item.id.toString()],
-                            startWordId: item.start_word_id.toString(),
-                            endWordId: item.end_word_id.toString(),
+                            startWordId: item.first_word_id.toString(),
+                            endWordId: item.last_word_id.toString(),
                             title: item.title,
                         }
                     }}
@@ -161,7 +161,7 @@ const renderItem = ({ item }: ListRenderItemInfo<UserLearning>) => (
         </View>
 
         <View className="w-full">
-            <QuranProgressBar firstWordId={item.start_word_id} lastWordId={item.end_word_id} />
+            <QuranProgressBar firstWordId={item.first_word_id} lastWordId={item.last_word_id} />
         </View>
 
     </View>

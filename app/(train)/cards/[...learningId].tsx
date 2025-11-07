@@ -86,13 +86,20 @@ export default function RevealCardsTraining() {
     // --- Progress Update Logic (No change) ---
 
     const updateWordProgress = useCallback(async (wordId: number, quality: number, status: 'correct' | 'incorrect') => {
+        // console.log(`Updating progress for word ${wordId} with quality ${quality} (${status})`);
+        // console.log(`------------`);
         try {
             // 1. Fetch current progress
             const currentProgress = await fetchProgressByWordIdDb(wordId);
+            // console.log(`Current progress for word ${wordId}:`, currentProgress);
+            // console.log(`------------`);
 
             // 2. Calculate new progress using SRS service
             const newProgress = getUpdatedProgress(currentProgress, quality);
             newProgress.word_id = wordId; // Ensure ID is set
+            
+            console.log(`New progress for word ${wordId}:`, newProgress);
+            console.log(`------------`);
 
             // 3. Upsert to database
             await upsertProgressDb(newProgress);
@@ -118,9 +125,7 @@ export default function RevealCardsTraining() {
     };
 
     const handleProgressConfirmation = (wordId: number, isCorrect: boolean) => {
-        const quality = isCorrect ? 5 : 1;
-        const status = isCorrect ? 'correct' : 'incorrect';
-        updateWordProgress(wordId, quality, status);
+        handleReveal(wordId, isCorrect ? 5 : 0);
     };
 
     const handleSwipeAction = (wordId: number, isCorrect: boolean) => {
@@ -150,7 +155,7 @@ export default function RevealCardsTraining() {
                 </TouchableOpacity>
             </View>
 
-            <Text className="text-lg font-arabic font-semibold">{item.text}</Text>
+            <Text className="text-lg font-uthmanic font-semibold">{item.text}</Text>
         </View>
     );
 

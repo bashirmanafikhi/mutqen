@@ -71,7 +71,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
 
     {/* Bottom Row: Progress Bar */}
     <View className="mt-3">
-      <QuranProgressBar firstWordId={item.start_word_id} lastWordId={item.end_word_id} />
+      <QuranProgressBar firstWordId={item.first_word_id} lastWordId={item.last_word_id} />
     </View>
   </TouchableOpacity>
 );

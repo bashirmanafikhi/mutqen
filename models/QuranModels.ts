@@ -12,8 +12,8 @@ export interface Surah {
   name: string;
   name_without_tashkeel: string;
   page_id: number;
-  start_word_id: number;
-  end_word_id: number;
+  first_word_id: number;
+  last_word_id: number;
   aya_count: number;
   revelation_place: string;
 }
@@ -53,8 +53,8 @@ export interface QuranPage {
 export interface UserLearning {
   id: number;
   title: string;
-  start_word_id: number;
-  end_word_id: number;
+  first_word_id: number;
+  last_word_id: number;
   created_at: string; // DATETIME is often mapped to a string in JS
 }
 
@@ -95,4 +95,11 @@ export interface WordCard extends QuranWord {
     suraName: string; // For display
     isFirstAyaWord: boolean;
     isFirstSuraWord: boolean;
+}
+
+
+export interface AyaTafseer {
+  sura_id: number;
+  aya_number: number;
+  text: string;
 }
