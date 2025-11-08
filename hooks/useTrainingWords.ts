@@ -28,6 +28,7 @@ export function useTrainingWords(startWordId: number, endWordId: number) {
           suraName: `سورة ${word.sura_id}`,
           isFirstAyaWord: prev ? prev.aya_number !== word.aya_number : true,
           isFirstSuraWord: index === 0,
+          memory_tier: 0
         };
       });
       setAllWords(mapped);
@@ -52,7 +53,12 @@ export function useTrainingWords(startWordId: number, endWordId: number) {
       const updated = getUpdatedProgress(current, quality);
       updated.word_id = wordId;
       await upsertProgressDb(updated);
-      setAllWords(prev => prev.map(w => w.id === wordId ? { ...w, isRevealed: true, progressStatus: status } : w));
+      setAllWords(prev => prev.map(w => w.id === wordId ? {
+        ...w,
+        isRevealed: true,
+        progressStatus: status,
+        memory_tier: updated.memory_tier
+      } : w));
     } catch (e) {
       console.error('Error updating progress:', e);
     }

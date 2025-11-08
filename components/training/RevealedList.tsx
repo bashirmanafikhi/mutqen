@@ -21,6 +21,7 @@ const RevealedList = forwardRef<FlatList<WordCard>, Props>(({ revealedWords, upd
         ? 'text-green-800 dark:text-green-100'
         : 'text-red-800 dark:text-red-100';
 
+    const memoryLabels = ['(غير متعلم)', '(ضعيف)', '(معتدل)', '(جيد)', '(متقن)'];
     return (
       <View className="mb-4">
         <View
@@ -43,7 +44,13 @@ const RevealedList = forwardRef<FlatList<WordCard>, Props>(({ revealedWords, upd
             {item.text}
           </Text>
 
-          <View className="w-6" />
+          {/* Memory tier and next review display */}
+          <View className="mt-1 flex-col items-center">
+            <Text className="text-sm font-semibold text-gray-500 dark:text-gray-300">
+              {memoryLabels[item.memory_tier ?? 0]}
+            </Text>
+          </View>
+          
         </View>
 
         {!isLast && item.is_end_of_aya ? (

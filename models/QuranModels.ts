@@ -95,6 +95,7 @@ export interface WordCard extends QuranWord {
     suraName: string; // For display
     isFirstAyaWord: boolean;
     isFirstSuraWord: boolean;
+    memory_tier: number;
 }
 
 
