@@ -70,7 +70,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
                 {[
                     { type: 'read', label: '📖 قراءة', bg: 'bg-app-info-light dark:bg-app-info-dark', link: '/(train)/read/[...learningId]' as const },
                     { type: 'train', label: '💪 تدريب', bg: 'bg-app-primary-light dark:bg-app-primary-dark', link: '/(train)/cards/[...learningId]' as const },
-                    { type: 'cloze', label: '✏️ فراغات', bg: 'bg-app-success-light dark:bg-app-success-dark', link: '/(train)/cloze/[...learningId]' as const },
+                    // { type: 'cloze', label: '✏️ فراغات', bg: 'bg-app-success-light dark:bg-app-success-dark', link: '/(train)/cloze/[...learningId]' as const },
                     { type: 'delete', label: '🗑️ حذف', bg: 'bg-app-error-light dark:bg-app-error-dark', action: () => onDeleteLearning(item.id) },
                 ].map((btn, idx) => (
                     btn.link ? (

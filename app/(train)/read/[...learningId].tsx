@@ -58,6 +58,7 @@ export default function ReadMemorizationScreen() {
           const suraId = data[0].sura_id;
           const firstAya = data[0].aya_number;
           const lastAya = data[data.length - 1].aya_number;
+
           const tafseerData = await fetchTafseersByRange(suraId, firstAya, lastAya);
           setTafseers(tafseerData);
         }
@@ -84,7 +85,9 @@ export default function ReadMemorizationScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-white dark:bg-black">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="mt-2 text-gray-600 dark:text-gray-300 text-lg">جاري تحميل الآيات...</Text>
+        <Text className="mt-2 text-gray-600 dark:text-gray-300 text-lg">
+          جاري تحميل الآيات...
+        </Text>
       </View>
     );
   }
@@ -98,7 +101,11 @@ export default function ReadMemorizationScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} className="space-y-4">
         {ayas.map((item) => {
-          const tafseer = tafseers.find((t) => t.aya_number == item.aya_number);
+          // Ensure numeric comparison
+          const tafseer = tafseers.find(
+            (t) => Number(String(t.aya_number).trim()) === Number(item.aya_number)
+          );
+
           const isExpanded = expandedAya === item.aya_number;
 
           return (
@@ -118,7 +125,7 @@ export default function ReadMemorizationScreen() {
               {isExpanded && tafseer ? (
                 <View className="mt-3 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                   <Text className="text-right text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {tafseer.text}
+                    {tafseer?.text ?? "لا يوجد تفسير لهذه الآية."}
                   </Text>
                 </View>
               ) : null}

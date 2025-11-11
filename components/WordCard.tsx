@@ -37,7 +37,7 @@ const WordCardComponent: React.FC<WordCardProps> = ({ card, onReveal, onSwipeAct
       if (isSwipedRight || isSwipedLeft) {
         const isCorrect = isSwipedRight;
         setOpacity(0);
-        setTimeout(() => onSwipeAction(card.id, isCorrect), 50);
+        onSwipeAction(card.id, isCorrect)
       } else {
         setTranslateX(0);
       }

@@ -77,10 +77,6 @@ export default function AppLayout() {
         name="about"
         options={{ drawerLabel: "حول التطبيق" }}
       />
-      <Drawer.Screen
-        name="rate"
-        options={{ drawerLabel: "تقييم التطبيق" }}
-      />
     </Drawer>
   );
 }

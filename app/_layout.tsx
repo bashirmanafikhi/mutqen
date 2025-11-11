@@ -17,7 +17,7 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setColorScheme(isDark ? 'dark' : 'light');
-  }, [isDark]);
+  }, [isDark, setColorScheme]);
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900">
@@ -26,11 +26,14 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-// Wrapper لتطبيق safe area فقط في الأسفل
+/**
+ * غلاف لتطبيق المسافة السفلية (Bottom Inset) لتجنب شريط التنقل السفلي.
+ */
 function BottomSafeAreaWrapper({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
 
   return (
+    // تطبيق paddingBottom من الحواف الآمنة
     <View style={{ flex: 1, paddingBottom: insets.bottom }}>
       {children}
     </View>
@@ -53,7 +56,7 @@ export default function RootLayout() {
       } catch (error: any) {
         setFontError(error?.message || 'خط غير معروف');
       } finally {
-        SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
       }
     }
     loadFonts();

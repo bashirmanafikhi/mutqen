@@ -17,7 +17,7 @@ export default function AboutScreen() {
   const subtitleClass = `${fontMap[fontSizeKey]} text-app-lg font-semibold`;
 
   const iconColor = isDark ? '#a5b4fc' : '#4f46e5';
-  const placeholderImageUrl = 'https://placehold.co/400x200/2563eb/ffffff?text=App+Vision';
+  const placeholderImageUrl = './assets/images/quran-memorization.png';
 
   const features: { iconName: keyof typeof Ionicons.glyphMap; text: string }[] = [
     { iconName: 'book', text: 'مسارات تعليمية مخصصة بناءً على احتياجك.' },
@@ -49,7 +49,7 @@ export default function AboutScreen() {
       {/* Image */}
       <View className="mb-6 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <Image
-          source={{ uri: placeholderImageUrl }}
+          source={require('@/assets/images/quran-memorization.png')}
           style={{ width: '100%', height: 200 }}
           resizeMode="cover"
         />
@@ -96,7 +96,7 @@ export default function AboutScreen() {
           <Text className={`${textClass} font-bold text-white`}>تكبير الخط</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => console.log('Sharing App...')}
           className="flex-row items-center px-5 py-3 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg"
         >
@@ -104,7 +104,7 @@ export default function AboutScreen() {
           <Text className={`${textClass} font-bold text-gray-900 dark:text-white`}>
             مشاركة
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Footer */}

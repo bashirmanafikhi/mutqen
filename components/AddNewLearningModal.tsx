@@ -6,12 +6,12 @@ import {
   AccessibilityRole,
   Alert,
   Modal,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectHizbModal from './SelectHizbModal';
 import SelectJuzModal from './SelectJuzModal';
 import SelectPageModal from './SelectPageModal';

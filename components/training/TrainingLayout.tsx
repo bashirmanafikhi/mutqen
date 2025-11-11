@@ -1,4 +1,3 @@
-// components/training/TrainingLayout.tsx
 import { useTrainingWords } from '@/hooks/useTrainingWords';
 import { WordCard } from '@/models/QuranModels';
 import React, { useEffect, useRef } from 'react';
@@ -9,15 +8,28 @@ import RevealedList from './RevealedList';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-export default function TrainingLayout({ startWordId, endWordId }: { startWordId: number; endWordId: number }) {
-  const { revealedWords, hiddenWords, isLoading, updateProgress, restart } = useTrainingWords(startWordId, endWordId);
+export default function TrainingLayout({
+  startWordId,
+  endWordId,
+}: {
+  startWordId: number;
+  endWordId: number;
+}) {
+  const { revealedWords, hiddenWords, isLoading, updateProgress, restart } =
+    useTrainingWords(startWordId, endWordId);
+
   const listRef = useRef<FlatList<WordCard>>(null);
+  const previousLength = useRef(0);
 
   useEffect(() => {
-    if (revealedWords.length > 0) {
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+    if (revealedWords.length > previousLength.current) {
+      // scroll to the bottom (latest revealed item)
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
-  }, [revealedWords]);
+    previousLength.current = revealedWords.length;
+  }, [revealedWords.length]);
 
   if (isLoading)
     return (
@@ -47,7 +59,11 @@ export default function TrainingLayout({ startWordId, endWordId }: { startWordId
         style={{ flex: 1 }}
         className="flex-1 p-4 bg-gray-100 dark:bg-gray-800"
       >
-        <HiddenCardArea hiddenWords={hiddenWords} updateProgress={updateProgress} restart={restart} />
+        <HiddenCardArea
+          hiddenWords={hiddenWords}
+          updateProgress={updateProgress}
+          restart={restart}
+        />
       </GestureHandlerRootView>
     </View>
   );
