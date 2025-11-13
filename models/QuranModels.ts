@@ -67,13 +67,14 @@ export interface UserLearning {
  * Interface for a record from the 'user_progress' table.
  */
 export interface UserProgress {
-    word_id: number;
-    current_interval: number; // in seconds
-    review_count: number;
+    word_id: number; // Foreign key to QuranWord.id
+    current_interval: number; // is seconds
+    review_count: number; // number of times reviewed
     ease_factor: number; // usually starts at 2.5
     next_review_date: string; // ISO date string
     last_review_date: string; // ISO date string
     last_successful_date: string | null; // ISO date string
+    
     /*
       0 -> (not learned)
       1 -> (weak)
@@ -81,9 +82,9 @@ export interface UserProgress {
       3 -> (good)
       4 -> (mastered
     */
-    memory_tier: number;
-    lapses: number;
-    notes: string | null;
+    memory_tier: number; 
+    lapses: number; // number of times forgotten
+    notes: string | null; // user notes
 }
 
 /**

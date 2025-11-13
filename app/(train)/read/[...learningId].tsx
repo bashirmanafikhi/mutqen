@@ -1,11 +1,12 @@
 // screens/ReadMemorizationScreen.tsx
-import { AyaTafseer, QuranWord } from "@/models/QuranModels";
+import { AyaTafseer, QuranWord, UserProgress } from "@/models/QuranModels";
 import { toArabicNumber } from "@/services/Utilities";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Text, TouchableOpacity, View } from "react-native";
 
 import { fetchTafseersForAyaPairs } from "@/services/data/tafseerQueries";
+import { fetchProgressRangeDb } from "@/services/data/userProgressQueries";
 import {
   fetchDistinctAyasInRange,
   fetchWordsForAyaPairs
@@ -14,28 +15,53 @@ import {
 // ---------------------------------------------
 // Local Types
 // ---------------------------------------------
+// Replace the current Aya interface with this:
+interface AyaWord {
+  text: string;
+  isHard: boolean;
+  isEndOfAya: boolean;
+  ayaNumber: number; // To show the circle at the end
+}
+
 interface Aya {
   sura_id: number;
   aya_number: number;
-  text: string;
+  words: AyaWord[]; // List of structured words
 }
 
 // ---------------------------------------------
 // Helpers
 // ---------------------------------------------
-const groupWordsIntoAyasFromWords = (words: QuranWord[]): Aya[] => {
+const groupWordsIntoAyasFromWords = (words: QuranWord[], progressMap?: Record<number, UserProgress>): Aya[] => {
   const map = new Map<string, Aya>();
 
   words.forEach((word) => {
     const key = `${word.sura_id}-${word.aya_number}`;
+    const progress = progressMap?.[word.id];
+
+    // Check if word is hard (KEEP THIS LOGIC)
+    // Note: I simplified the EF check to be less than 2.5, as 5 is extremely high for EF.
+    const isHard = progress && progress.ease_factor < 2.5 && progress.lapses > 0;
+
+    // 1. Create the structured word object
+    const structuredWord: AyaWord = {
+      text: word.text,
+      isHard: isHard!,
+      isEndOfAya: word.is_end_of_aya,
+      ayaNumber: word.aya_number,
+    };
+
     const existing = map.get(key);
-    const newText = existing ? `${existing.text} ${word.text}` : word.text;
-    const finalText = word.is_end_of_aya ? `${newText} ${toArabicNumber(word.aya_number)}` : newText;
-    map.set(key, {
-      sura_id: word.sura_id,
-      aya_number: word.aya_number,
-      text: finalText.trim(),
-    });
+
+    if (existing) {
+      existing.words.push(structuredWord);
+    } else {
+      map.set(key, {
+        sura_id: word.sura_id,
+        aya_number: word.aya_number,
+        words: [structuredWord],
+      });
+    }
   });
 
   return Array.from(map.values()).sort((a, b) =>
@@ -60,13 +86,14 @@ export default function ReadMemorizationScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [progressMap, setProgressMap] = useState<Record<number, UserProgress>>({});
+
 
   const PAGE_SIZE = 20;
 
   // helper to build key
   const ayaKey = (sura: number, aya: number) => `${sura}-${aya}`;
 
-  // Load one page of distinct ayas (pairs), fetch words for them, then tafseer
   const loadPage = useCallback(
     async (page: number) => {
       // guard
@@ -85,10 +112,33 @@ export default function ReadMemorizationScreen() {
 
         // fetch words for these aya pairs
         const words = await fetchWordsForAyaPairs(distinctPairs);
-        const pageAyas = groupWordsIntoAyasFromWords(words); // grouped & sorted for page
 
         // fetch tafseers for the same pairs
         const tafseers = await fetchTafseersForAyaPairs(distinctPairs);
+
+        // --- PROGRESS LOADING & MAPPING ---
+        let progressMapForGrouping: Record<number, UserProgress> = progressMap; // Start with the existing state
+
+        if (words.length > 0) {
+          const minWordId = Math.min(...words.map(w => w.id));
+          const maxWordId = Math.max(...words.map(w => w.id));
+          const progressList = await fetchProgressRangeDb(minWordId, maxWordId);
+
+          // Convert newly fetched list to a map
+          const newProgressMap: Record<number, UserProgress> = {};
+          progressList.forEach(p => { newProgressMap[p.word_id] = p; });
+
+          // Merge the existing state with the new progress for immediate use
+          progressMapForGrouping = { ...progressMap, ...newProgressMap };
+
+          // Queue the update for the state (for the next render/renderItem)
+          setProgressMap(prev => ({ ...prev, ...newProgressMap }));
+        }
+        // --- END PROGRESS LOADING ---
+
+
+        // Group words into Ayas, passing the IMMEDIATELY AVAILABLE progress map
+        const pageAyas = groupWordsIntoAyasFromWords(words, progressMapForGrouping); // <--- FIX IS HERE
 
         // build map for tafseers (key -> tafseer)
         const newTafseerMap: Record<string, AyaTafseer> = {};
@@ -96,7 +146,7 @@ export default function ReadMemorizationScreen() {
           newTafseerMap[ayaKey(t.sura_id, t.aya_number)] = t;
         });
 
-        // append
+        // append ayas
         setAyas((prev) => {
           // prevent duplicates: ensure we don't append already present keys
           const existingKeys = new Set(prev.map((p) => ayaKey(p.sura_id, p.aya_number)));
@@ -117,7 +167,8 @@ export default function ReadMemorizationScreen() {
         setLoadingMore(false);
       }
     },
-    [startWordId, endWordId, PAGE_SIZE, ayas.length, loadingMore]
+    // Ensure progressMap is in the dependency array since we read it directly for merging
+    [startWordId, endWordId, PAGE_SIZE, ayas.length, loadingMore, progressMap]
   );
 
   // initial load
@@ -139,17 +190,40 @@ export default function ReadMemorizationScreen() {
   };
 
   // render row
+  // render row
   const renderItem = useCallback(({ item }: ListRenderItemInfo<Aya>) => {
-    const key = ayaKey(item.sura_id, item.aya_number);
-    const tafseer = tafseersMap[key];
-    const isExpanded = expandedKey === key;
+  const key = ayaKey(item.sura_id, item.aya_number);
+  const tafseer = tafseersMap[key];
+  const isExpanded = expandedKey === key;
+
+  // Iterate over the structured words array from the Aya object
+  const words = item.words.map((w, i) => {
+    // Determine the content to append after the word
+    const endContent = w.isEndOfAya 
+        ? toArabicNumber(w.ayaNumber) + " " 
+        : " "; // Just a space if not end of aya
+    
+    return (
+      <Text
+        key={i}
+        className={`text-2xl font-uthmanic leading-relaxed ${
+          // Use the isHard property calculated and passed in the AyaWord object
+          w.isHard ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-gray-100"
+        }`}
+      >
+        {/* Render the word text */}
+        {w.text}
+        
+        {/* Render the space or the Aya number followed by a space */}
+        {endContent}
+      </Text>
+    );
+  });
 
     return (
       <View key={key} className="border-b border-gray-200 dark:border-gray-700 pb-3">
         <TouchableOpacity onPress={() => setExpandedKey((prev) => (prev === key ? null : key))}>
-          <Text className="text-right text-2xl font-uthmanic leading-relaxed text-gray-900 dark:text-gray-100">
-            {item.text}
-          </Text>
+          <Text className="text-right flex-row flex-wrap">{words}</Text>
           <Text className="text-right text-sm text-indigo-600 dark:text-indigo-400 mt-1">
             {isExpanded ? "إخفاء التفسير ▲" : "عرض التفسير ▼"}
           </Text>
@@ -164,7 +238,7 @@ export default function ReadMemorizationScreen() {
         )}
       </View>
     );
-  }, [expandedKey, tafseersMap]);
+  }, [expandedKey, tafseersMap, progressMap]);
 
   // key extractor
   const keyExtractor = useCallback((item: Aya) => ayaKey(item.sura_id, item.aya_number), []);
