@@ -4,6 +4,7 @@ import { upsertProgressDb } from "@/services/data/userProgressQueries";
 import { fetchWordsByRange } from "@/services/data/wordQueries";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -64,7 +65,8 @@ export default function ClozeTrainerScreen() {
 
   const startWordId = parseInt(params.startWordId as string);
   const endWordId = parseInt(params.endWordId as string);
-  const title = `تمرين الفراغات (${params.title})`;
+  const { t } = useTranslation();
+  const title = `${t('cloze.title')} (${params.title})`;
 
   const [words, setWords] = useState<QuranWord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ export default function ClozeTrainerScreen() {
         }
       } catch (err) {
         console.error("Error loading words:", err);
-        Alert.alert("خطأ", "حدث خطأ أثناء جلب كلمات النطاق.");
+        Alert.alert(t('common.error'), t('errors.load_words'));
       } finally {
         setLoading(false);
       }
@@ -132,7 +134,7 @@ export default function ClozeTrainerScreen() {
     if (!words.length) return;
     const currentAyaNum = words[currentAyaWordIndexes[0]].aya_number;
     const remaining = words.filter((w) => w.aya_number > currentAyaNum);
-    if (!remaining.length) return Alert.alert("انتهت الآيات", "لقد وصلت إلى نهاية النطاق.");
+    if (!remaining.length) return Alert.alert(t('cloze.end_aya_title'), t('cloze.end_aya_msg'));
     const nextAyaNum = remaining[0].aya_number;
     const nextIdxs = words.reduce<number[]>((acc, w, idx) => {
       if (w.aya_number === nextAyaNum) acc.push(idx);
@@ -155,6 +157,7 @@ export default function ClozeTrainerScreen() {
       const wordId = words[theBlank.indexInWords]?.id;
       if (wordId) {
         const progress: UserProgress = {
+          created_at: new Date().toISOString(),
           word_id: wordId,
           current_interval: isCorrect ? 1 : 0,
           review_count: isCorrect ? 1 : 1,
@@ -225,7 +228,7 @@ export default function ClozeTrainerScreen() {
   const renderTypingForBlank = (b: Blank, blankIdx: number) => (
     <View className="mt-3">
       <TextInput
-        placeholder="اكتب الكلمة هنا"
+        placeholder={t('cloze.placeholder')}
         className="border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-right"
         onSubmitEditing={(ev) => ev.nativeEvent.text && handleAnswer(blankIdx, ev.nativeEvent.text)}
         defaultValue={b.userAnswer}
@@ -236,7 +239,7 @@ export default function ClozeTrainerScreen() {
           className="bg-indigo-500 px-3 py-2 rounded-lg"
           onPress={() => b.userAnswer && handleAnswer(blankIdx, b.userAnswer)}
         >
-          <Text className="text-white font-bold">تحقق</Text>
+          <Text className="text-white font-bold">{t('cloze.check')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -250,15 +253,15 @@ export default function ClozeTrainerScreen() {
   if (loading) return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black justify-center items-center">
       <ActivityIndicator size="large" />
-      <Text className="mt-2 text-gray-600 dark:text-gray-300">تحميل التمرين...</Text>
+      <Text className="mt-2 text-gray-600 dark:text-gray-300">{t('cloze.loading')}</Text>
     </SafeAreaView>
   );
 
   if (!words.length) return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black justify-center items-center p-6">
-      <Text className="text-center text-lg text-red-600">لا توجد كلمات ضمن هذا النطاق.</Text>
+      <Text className="text-center text-lg text-red-600">{t('cloze.no_words')}</Text>
       <TouchableOpacity className="mt-4 bg-indigo-500 px-4 py-2 rounded-lg" onPress={() => router.back()}>
-        <Text className="text-white font-bold">عودة</Text>
+        <Text className="text-white font-bold">{t('cloze.back')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -272,10 +275,10 @@ export default function ClozeTrainerScreen() {
 
         <View className="flex-row items-center space-x-2">
           <TouchableOpacity className={`px-3 py-1 rounded-lg ${mode === "mcq" ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`} onPress={() => setMode("mcq")}>
-            <Text className={`${mode === "mcq" ? "text-white" : "text-black dark:text-gray-200"}`}>اختيار متعدد</Text>
+            <Text className={`${mode === "mcq" ? "text-white" : "text-black dark:text-gray-200"}`}>{t('cloze.mode_mcq')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity className={`px-3 py-1 rounded-lg ${mode === "typing" ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`} onPress={() => setMode("typing")}>
-            <Text className={`${mode === "typing" ? "text-white" : "text-black dark:text-gray-200"}`}>كتابة</Text>
+          <TouchableOpacity className={`px-3 py-1 rounded-lg ${mode === "typing" ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`} onPress={() => setMode("typing") }>
+            <Text className={`${mode === "typing" ? "text-white" : "text-black dark:text-gray-200"}`}>{t('cloze.mode_typing')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -334,7 +337,7 @@ export default function ClozeTrainerScreen() {
         {blanks.map((b, i) => (
           <View key={i} className="mb-3">
             <Text className="text-right text-sm text-gray-600 dark:text-gray-300 mb-1">
-              خانة رقم {i + 1}
+              {t('cloze.blank', { index: i + 1 })}
             </Text>
             {mode === "mcq" ? renderChoicesForBlank(b, i) : renderTypingForBlank(b, i)}
           </View>
@@ -348,7 +351,7 @@ export default function ClozeTrainerScreen() {
             if (currentAyaWordIndexes.length && words.length) {
               const currentAyaNum = words[currentAyaWordIndexes[0]].aya_number;
               const previous = words.filter((w) => w.aya_number < currentAyaNum);
-              if (!previous.length) return Alert.alert("بداية النطاق", "أنت في بداية النطاق.");
+              if (!previous.length) return Alert.alert(t('cloze.prev_alert_title'), t('cloze.prev_alert_msg'));
               const prevAyaNum = previous[previous.length - 1].aya_number;
               const prevIdxs = words.reduce<number[]>((acc, w, idx) => {
                 if (w.aya_number === prevAyaNum) acc.push(idx);
@@ -358,7 +361,7 @@ export default function ClozeTrainerScreen() {
               setBlanks([]);
             }
           }}>
-            <Text>السابق</Text>
+            <Text>{t('cloze.previous')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity className="bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded-lg" onPress={() => buildBlanksForCurrentAya()}>

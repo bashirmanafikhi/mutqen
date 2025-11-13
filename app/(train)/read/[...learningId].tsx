@@ -7,6 +7,7 @@ import { toArabicNumber } from "@/services/Utilities";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Text, TouchableOpacity, View } from "react-native";
 // استيراد الخطاف الجديد
 import { useAudioPlayer } from "@/hooks/useQuranAudio"; // تأكد من المسار الصحيح
@@ -83,6 +84,7 @@ const AyaItem: React.FC<AyaItemProps> = React.memo(({
     onToggleExpand,
     onPlayPause,
 }) => {
+    const { t } = useTranslation();
     const key = `${item.sura_id}-${item.aya_number}`;
 
     const words = item.words.map((w, i) => {
@@ -132,7 +134,7 @@ const AyaItem: React.FC<AyaItemProps> = React.memo(({
                     {/* 2. زر عرض/إخفاء التفسير */}
                     <View className="p-1">
                         <Text className="text-right text-sm text-indigo-600 dark:text-indigo-400">
-                            {isExpanded ? "إخفاء التفسير ▲" : "عرض التفسير ▼"}
+                            {isExpanded ? t('read.hide_tafseer') : t('read.show_tafseer')}
                         </Text>
                     </View>
                 </View>
@@ -143,7 +145,7 @@ const AyaItem: React.FC<AyaItemProps> = React.memo(({
             {isExpanded && (
                 <View className="mt-3 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                     <Text className="text-right text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {tafseer?.text ?? "لا يوجد تفسير لهذه الآية."}
+                        {tafseer?.text ?? t('read.no_tafseer')}
                     </Text>
                 </View>
             )}
@@ -156,6 +158,7 @@ const AyaItem: React.FC<AyaItemProps> = React.memo(({
 // Component: ReadMemorizationScreen (Main)
 // ---------------------------------------------
 export default function ReadMemorizationScreen() {
+        const { t } = useTranslation();
     const params = useLocalSearchParams();
     const startWordId = parseInt(params.startWordId as string);
     const endWordId = parseInt(params.endWordId as string);
@@ -281,7 +284,7 @@ export default function ReadMemorizationScreen() {
             return (
                 <View className="py-6 items-center">
                     <ActivityIndicator size="small" color="#4F46E5" />
-                    <Text className="text-gray-500 mt-1">جاري تحميل المزيد...</Text>
+                    <Text className="text-gray-500 mt-1">{t('read.load_more')}</Text>
                 </View>
             );
         }
@@ -289,7 +292,7 @@ export default function ReadMemorizationScreen() {
         if (!hasMore && ayas.length > 0) {
             return (
                 <View className="py-6 items-center">
-                    <Text className="text-gray-500">نهاية القراءة</Text>
+                    <Text className="text-gray-500">{t('read.end')}</Text>
                 </View>
             );
         }

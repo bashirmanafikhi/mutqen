@@ -3,6 +3,7 @@ import { UserProgress } from "@/models/QuranModels";
 import { fetchProgressRangeDb } from "@/services/data/userProgressQueries";
 import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
 export default function ReadProgress() {
@@ -13,6 +14,7 @@ export default function ReadProgress() {
 
   const [progressList, setProgressList] = useState<UserProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadProgress = async () => {
@@ -34,7 +36,7 @@ export default function ReadProgress() {
     return (
       <View className="flex-1 justify-center items-center bg-white dark:bg-black">
         <ActivityIndicator size="large" color="#4F46E5" />
-        <Text className="text-gray-600 dark:text-gray-300 mt-2">جاري تحميل التقدّم...</Text>
+        <Text className="text-gray-600 dark:text-gray-300 mt-2">{t('home.loading')}</Text>
       </View>
     );
   }
@@ -45,7 +47,7 @@ export default function ReadProgress() {
 
       {progressList.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-600 dark:text-gray-300 text-lg">لا يوجد بيانات تقدّم في هذا المدى.</Text>
+          <Text className="text-gray-600 dark:text-gray-300 text-lg">{t('progress.no_data')}</Text>
         </View>
       ) : (
         <FlatList

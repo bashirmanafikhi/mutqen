@@ -10,8 +10,10 @@ import LearningList from "@/components/LearningList";
 import { useSettings } from "@/context/AppSettingContext";
 import { UserLearning } from "@/models/QuranModels";
 import { deleteLearningById, fetchAllLearnings, insertNewLearning } from "@/services/data/learningQueries";
+import { useTranslation } from 'react-i18next';
 
 export default function Index() {
+  const { t } = useTranslation();
   const { isDark } = useSettings();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [learnings, setLearnings] = useState<UserLearning[]>([]);
@@ -68,13 +70,16 @@ export default function Index() {
   // ===============================
   return (
     <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      <Stack.Screen options={{ title: "📖 متقن | حفظ القرآن الكريم" }} />
+
+      <Stack.Screen options={{ title: t('home.title') }} />
 
       {/* Header */}
       <View className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-indigo-600 dark:bg-gray-800">
-        <Text className="text-2xl font-bold text-white text-center">
-          قائمة المحفوظات
-        </Text>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-2xl font-bold text-white text-center flex-1">
+            {t('home.header')}
+          </Text>
+        </View>
       </View>
 
       {/* Body */}
@@ -82,7 +87,7 @@ export default function Index() {
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color={isDark ? "#f9fafb" : "#4f46e5"} />
-            <Text className="text-gray-400 mt-2">جارِ التحميل...</Text>
+            <Text className="text-gray-400 mt-2">{t('home.loading')}</Text>
           </View>
         ) : (
           <LearningList learnings={learnings} isLoading={isLoading} onDeleteLearning={handleDeleteLearning} />

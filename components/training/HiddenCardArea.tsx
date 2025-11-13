@@ -2,6 +2,7 @@
 import WordCardComponent from '@/components/WordCard';
 import { WordCard } from '@/models/QuranModels';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function HiddenCardArea({ hiddenWords, updateProgress, restart }: Props) {
+  const { t } = useTranslation();
   const currentWord = hiddenWords[0];
 
   const handleReveal = (wordId: number, quality: number) => {
@@ -29,7 +31,7 @@ export default function HiddenCardArea({ hiddenWords, updateProgress, restart }:
           key="training-finished"
           className="text-4xl text-white font-extrabold p-6 bg-green-500 dark:bg-green-700 rounded-3xl text-center shadow-lg animate-bounce"
         >
-          🎉 انتهى التدريب!
+          {t('training.finished')}
         </Text>
 
         <TouchableOpacity
@@ -38,7 +40,7 @@ export default function HiddenCardArea({ hiddenWords, updateProgress, restart }:
           className="mt-6 px-10 py-4 bg-indigo-500 dark:bg-indigo-600 rounded-2xl shadow-lg transform active:scale-95"
         >
           <Text className="text-white text-lg font-semibold text-center">
-            إعادة التشغيل
+            {t('training.restart')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -49,7 +51,7 @@ export default function HiddenCardArea({ hiddenWords, updateProgress, restart }:
     <View className="flex-1 justify-center items-center px-4">
       {/* Remaining Words Counter */}
       <Text className="text-lg font-bold text-center text-gray-700 dark:text-gray-200 mb-1">
-        ({hiddenWords.length} متبقية)
+        {t('training.remaining', { count: hiddenWords.length })}
       </Text>
 
       {/* Current Word Card */}

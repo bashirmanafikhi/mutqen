@@ -7,6 +7,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppSettingsProvider, useSettings } from '../context/AppSettingContext';
+import '../services/i18n';
 import './globals.css';
 
 SplashScreen.preventAutoHideAsync();

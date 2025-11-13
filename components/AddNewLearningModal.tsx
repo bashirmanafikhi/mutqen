@@ -2,6 +2,7 @@
 import { QuranDivision, QuranJuz, QuranPage, Surah } from '@/models/QuranModels';
 import { fetchWordRangeForPage, fetchWordRangeForSurah } from '@/services/data/wordQueries';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AccessibilityRole,
   Alert,
@@ -39,6 +40,7 @@ export default function AddNewLearningModal({
   onCreateLearning,
 }: AddNewLearningModalProps) {
   const [activeModal, setActiveModal] = useState<ActiveModal>(ActiveModal.None);
+  const { t } = useTranslation();
 
   const reset = () => {
     setActiveModal(ActiveModal.None);
@@ -122,22 +124,22 @@ export default function AddNewLearningModal({
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 py-4 border-b border-app-border-light dark:border-app-border-dark bg-app-bg-light dark:bg-app-bg-dark">
               <Text className="text-xl font-bold text-app-text-primary-light dark:text-app-text-primary-dark">
-                إضافة حفظ جديد
+                {t('add_new.title')}
               </Text>
 
               <TouchableOpacity onPress={reset} accessibilityRole={'button' as AccessibilityRole} className="p-2">
-                <Text className="text-sm font-semibold text-app-error-light dark:text-app-error-dark">إلغاء</Text>
+                <Text className="text-sm font-semibold text-app-error-light dark:text-app-error-dark">{t('add_new.cancel')}</Text>
               </TouchableOpacity>
             </View>
 
             {/* Content */}
             <ScrollView contentContainerStyle={{ padding: 16 }} className="bg-app-surface-light dark:bg-app-surface-dark">
 
-              <OptionButton title="السور" onPress={() => setActiveModal(ActiveModal.Surah)} />
-              <OptionButton title="الأجزاء (جزء)" onPress={() => setActiveModal(ActiveModal.Juz)} />
-              <OptionButton title="الأحزاب" onPress={() => setActiveModal(ActiveModal.Hizb)} />
-              <OptionButton title="تحزيب الصحابة" onPress={() => setActiveModal(ActiveModal.SahabaDivision)} />
-              <OptionButton title="الصفحات" onPress={() => setActiveModal(ActiveModal.Page)} />
+              <OptionButton title={t('add_new.option.surah')} onPress={() => setActiveModal(ActiveModal.Surah)} />
+              <OptionButton title={t('add_new.option.juz')} onPress={() => setActiveModal(ActiveModal.Juz)} />
+              <OptionButton title={t('add_new.option.hizb')} onPress={() => setActiveModal(ActiveModal.Hizb)} />
+              <OptionButton title={t('add_new.option.sahaba')} onPress={() => setActiveModal(ActiveModal.SahabaDivision)} />
+              <OptionButton title={t('add_new.option.page')} onPress={() => setActiveModal(ActiveModal.Page)} />
 
               <TouchableOpacity
                 onPress={() => Alert.alert('قريباً', 'ميزة التحديد المخصص ستكون متاحة قريبًا')}
@@ -147,7 +149,7 @@ export default function AddNewLearningModal({
                 accessibilityLabel="تحديد مخصص"
               >
                 <Text className="text-center text-base font-semibold text-app-text-secondary-light dark:text-app-text-secondary-dark">
-                  تحديد مخصص (قريبًا)
+                  {t('add_new.option.custom_soon')}
                 </Text>
               </TouchableOpacity>
             </ScrollView>

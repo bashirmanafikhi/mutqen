@@ -4,6 +4,7 @@ import { useSettings } from '@/context/AppSettingContext';
 import { UserLearning } from '@/models/QuranModels';
 import { Link } from 'expo-router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
     FlatList,
@@ -22,13 +23,14 @@ interface LearningListProps {
 
 const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDeleteLearning }) => {
     const { isDark } = useSettings();
+    const { t } = useTranslation();
 
     if (isLoading) {
         return (
             <View className="flex-1 justify-center items-center bg-app-bg-light dark:bg-app-bg-dark">
                 <ActivityIndicator size="large" color={isDark ? "#818CF8" : "#6366F1"} />
                 <Text className="mt-2 text-lg text-app-text-secondary-light dark:text-app-text-secondary-dark">
-                    جاري تحميل قائمة المحفوظات...
+                    {t('learningList.loading_list')}
                 </Text>
             </View>
         );
@@ -38,7 +40,7 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
         return (
             <View className="flex-1 justify-center items-center p-8 bg-app-bg-light dark:bg-app-bg-dark">
                 <Text className="text-xl text-app-text-secondary-light dark:text-app-text-secondary-dark text-center">
-                    لا يوجد لديك أي محفوظات بعد. اضغط على "+" لإضافة عنصر جديد!
+                    {t('home.empty_title')} {t('home.empty_hint')}
                 </Text>
             </View>
         );
@@ -68,11 +70,10 @@ const LearningList: React.FC<LearningListProps> = ({ learnings, isLoading, onDel
             {/* Action Buttons */}
             <View className="flex-row justify-between mt-4">
                 {[
-                    { type: 'read', label: '📖 قراءة', bg: 'bg-app-info-light dark:bg-app-info-dark', link: '/(train)/read/[...learningId]' as const },
-                    { type: 'train', label: '💪 تدريب', bg: 'bg-app-primary-light dark:bg-app-primary-dark', link: '/(train)/cards/[...learningId]' as const },
-                    // { type: 'cloze', label: '✏️ فراغات', bg: 'bg-app-success-light dark:bg-app-success-dark', link: '/(train)/cloze/[...learningId]' as const },
-                        { type: 'progress', label: '📊 التقدّم', bg: 'bg-app-success-light dark:bg-app-success-dark', link: '/(train)/progress/[...learningId]' as const },
-                    { type: 'delete', label: '🗑️ حذف', bg: 'bg-app-error-light dark:bg-app-error-dark', action: () => onDeleteLearning(item.id) },
+                    { type: 'read', label: t('actions.read'), bg: 'bg-app-info-light dark:bg-app-info-dark', link: '/(train)/read/[...learningId]' as const },
+                    { type: 'train', label: t('actions.train'), bg: 'bg-app-primary-light dark:bg-app-primary-dark', link: '/(train)/cards/[...learningId]' as const },
+                    { type: 'progress', label: t('actions.progress'), bg: 'bg-app-success-light dark:bg-app-success-dark', link: '/(train)/progress/[...learningId]' as const },
+                    { type: 'delete', label: t('actions.delete'), bg: 'bg-app-error-light dark:bg-app-error-dark', action: () => onDeleteLearning(item.id) },
                 ].map((btn, idx) => (
                     btn.link ? (
                         <Link
