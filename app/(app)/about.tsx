@@ -1,4 +1,5 @@
 import { useSettings } from '@/context/AppSettingContext';
+import { AppActionsService } from '@/services/Utilities';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -11,11 +12,10 @@ const fontMap = {
 };
 
 export default function AboutScreen() {
-  const { fontSizeKey, setFontSizeKey, isDark } = useSettings();
+  const { fontSizeKey, isDark } = useSettings();
   const textClass = fontMap[fontSizeKey];
   const titleClass = `${fontMap[fontSizeKey]} text-app-xl font-extrabold`;
   const subtitleClass = `${fontMap[fontSizeKey]} text-app-lg font-semibold`;
-
   const iconColor = isDark ? '#a5b4fc' : '#4f46e5';
 
   const features: { iconName: keyof typeof Ionicons.glyphMap; text: string }[] = [
@@ -24,9 +24,20 @@ export default function AboutScreen() {
     { iconName: 'checkmark-done', text: 'عرض كلمة بكلمة لتصحيح الأخطاء اللفظية وتحسين الدقة.' },
   ];
 
-  return (
-    <ScrollView className="flex-1 p-4 bg-gray-50 dark:bg-gray-900">
+  const actionButtons = [
+    { icon: 'star', label: 'تقييم', action: AppActionsService.rateApp },
+    { icon: 'share-social', label: 'مشاركة', action: AppActionsService.shareApp },
+    { icon: 'mail', label: 'أرسل ملاحظاتك', action: AppActionsService.sendFeedback },
+  ];
 
+  const colors = {
+    buttonBg: isDark ? '#4f46e5' : '#4f46e5',
+    buttonText: '#ffffff',
+    screenBg: isDark ? '#111827' : '#f9fafb',
+  };
+
+  return (
+    <ScrollView className="flex-1 p-4" style={{ backgroundColor: colors.screenBg }}>
       <Stack.Screen
         options={{
           title: "حول التطبيق",
@@ -101,22 +112,25 @@ export default function AboutScreen() {
         </Text>
       </View>
 
-      {/* أزرار */}
-      <View className="flex-row justify-center mb-8">
-        <TouchableOpacity
-          onPress={() => setFontSizeKey('large')}
-          className="flex-row items-center px-5 py-3 rounded-full bg-indigo-500 dark:bg-indigo-600 shadow-lg"
-        >
-          <Ionicons name="resize-outline" size={18} color="#fff" />
-          <Text className={`${textClass} font-bold text-white ml-2`}>تكبير الخط</Text>
-        </TouchableOpacity>
+      {/* أزرار الإجراءات */}
+      <View className="mb-8 space-y-3 flex-row items-center">
+        {actionButtons.map((btn, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={btn.action}
+            className="flex-row justify-center items-center p-3 m-2 rounded-full shadow-md"
+            style={{ backgroundColor: colors.buttonBg }}
+          >
+            <Ionicons name={btn.icon as any} size={18} color={colors.buttonText} />
+            <Text className={`${textClass} font-bold text-white ml-2`}>{btn.label}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* تذييل */}
       <Text className={`${fontMap[fontSizeKey]} text-center mb-6 text-gray-600 dark:text-gray-400`}>
         الإصدار: 1.0.0 | جميع الحقوق محفوظة {new Date().getFullYear()}
       </Text>
-
     </ScrollView>
   );
 }
