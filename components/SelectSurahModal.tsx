@@ -22,6 +22,8 @@ interface SurahModalProps {
 
 export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: SurahModalProps) {
   const { isDark } = useSettings();
+
+  // FIX 1: State is correctly typed as Surah[]
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -30,6 +32,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
       if (surahs.length > 0) return;
 
       try {
+        // FIX 2: Data type is Surah[]
         const data: Surah[] = await fetchAllSurahs();
         setSurahs(data);
       } catch (error) {
@@ -40,7 +43,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
     }
 
     if (isVisible && surahs.length === 0) loadSurahs();
-  }, [isVisible]);
+  }, [isVisible, surahs.length]); // Added surahs.length to dependency array to prevent unnecessary re-runs
 
   const handleSelect = (item: Surah) => {
     onSelectSurah(item);
@@ -51,9 +54,8 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
     <TouchableOpacity
       onPress={() => handleSelect(item)}
       activeOpacity={0.85}
-      className={`flex-col p-4 rounded-2xl mb-3 shadow-sm border ${
-        isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
-      }`}
+      className={`flex-col p-4 rounded-2xl mb-3 shadow-sm border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
+        }`}
     >
       <View className="flex-row justify-between items-center">
         <View className="flex-row items-center">
@@ -68,11 +70,10 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
         <View className="flex-row text-right">
           <Text className={`text-sm mr-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.aya_count} آية</Text>
           <Text
-            className={`text-sm font-medium ${
-              item.revelation_place === 'مدنيه'
+            className={`text-sm font-medium ${item.revelation_place === 'مدنيه'
                 ? isDark ? 'text-blue-400' : 'text-blue-500'
                 : isDark ? 'text-green-400' : 'text-green-500'
-            }`}
+              }`}
           >
             {item.revelation_place}
           </Text>
@@ -89,12 +90,11 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
     <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
       <SafeAreaView className="flex-1 bg-black/50">
         <View className={`flex-1 mt-16 rounded-t-3xl overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-          
+
           {/* Header */}
           <View
-            className={`p-5 flex-row justify-between items-center border-b ${
-              isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
-            }`}
+            className={`p-5 flex-row justify-between items-center border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
+              }`}
           >
             <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>قائمة السور</Text>
             <TouchableOpacity onPress={onClose} className="px-3 py-1">
@@ -109,7 +109,12 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
               <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>جاري تحميل السور...</Text>
             </View>
           ) : (
-            <FlatList<Surah> data={surahs} renderItem={renderItem} keyExtractor={(item) => item.id.toString()} />
+            <FlatList<Surah>
+              data={surahs}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id.toString()}
+              className="p-4"
+            />
           )}
         </View>
       </SafeAreaView>

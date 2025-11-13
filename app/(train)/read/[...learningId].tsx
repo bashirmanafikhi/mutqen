@@ -39,9 +39,8 @@ const groupWordsIntoAyasFromWords = (words: QuranWord[], progressMap?: Record<nu
     const key = `${word.sura_id}-${word.aya_number}`;
     const progress = progressMap?.[word.id];
 
-    // Check if word is hard (KEEP THIS LOGIC)
-    // Note: I simplified the EF check to be less than 2.5, as 5 is extremely high for EF.
-    const isHard = progress && progress.ease_factor < 2.5 && progress.lapses > 0;
+    // Check if word is hard
+    const isHard = progress && progress.ease_factor <= 2 && progress.lapses >= 3;
 
     // 1. Create the structured word object
     const structuredWord: AyaWord = {

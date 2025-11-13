@@ -1,8 +1,10 @@
-// src/services/DatabaseConnection.ts
-
+// src/services/DrizzleConnection.ts
+import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 import * as SQLite from "expo-sqlite";
+
+let dbInstance: ReturnType<typeof drizzle> | null = null;
 
 // =============================
 // Constants
@@ -52,4 +54,16 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
   await ensureDatabaseExists();
   db = await SQLite.openDatabaseAsync(DB_NAME);
   return db;
+}
+
+export async function getDrizzleDb() {
+  if (dbInstance) return dbInstance;
+  // ensure DB file exists first (runs your copy logic)
+  await ensureDatabaseExists();
+
+  // open the DB — match name you used when copying (for expo-sqlite the name is used)
+  const expoDb = SQLite.openDatabaseSync(DB_NAME);
+  const db = drizzle(expoDb);
+  dbInstance = db;
+  return dbInstance;
 }

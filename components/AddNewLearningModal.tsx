@@ -56,7 +56,7 @@ export default function AddNewLearningModal({
     try {
       const range = await fetchWordRangeForSurah(surah.id);
       if (!range) return;
-      finalize(surah.name, range.start, range.end);
+      finalize(surah.name!, range.start, range.end);
     } catch (err) {
       console.error('fetchWordRangeForSurah error', err);
       Alert.alert('خطأ', 'تعذّر جلب نطاق السورة. حاول مرة أخرى.');

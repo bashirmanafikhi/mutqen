@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 interface Props {
-    firstWordId: number;
-    lastWordId: number;
+    firstWordId: number | null;
+    lastWordId: number | null;
 }
 
 export default function QuranProgressBar({ firstWordId, lastWordId }: Props) {

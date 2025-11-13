@@ -4,18 +4,44 @@ import { UserProgress } from '@/models/QuranModels';
 
 /**
  * ==============================
- * 📦 BASE CONFIGURATION CONSTANTS
+ * 🧠 SPACED REPETITION CONSTANTS
  * ==============================
+ */
+
+/**
+ * Memory Tier Definitions (0 to 4)
+ * These integers map to specific progress levels in the user_progress table.
+ */
+export const MemoryTiers = {
+  NOT_LEARNED: 0, // Words without an entry in user_progress
+  WEAK: 1,
+  FAIR: 2,
+  GOOD: 3,
+  MASTERED: 4,
+} as const; // Use 'as const' for strong type inference
+
+/**
+ * BASE CONFIGURATION CONSTANTS
  * Defines the spaced repetition baseline and bounds.
  * All intervals are in seconds.
  */
-const BASE = {
-  NEW_FIRST_INTERVAL: 30,               // 30 seconds first retry
+export const BASE = {
+  NEW_FIRST_INTERVAL: 30,             // 30 seconds first retry
   MIN_EASE_FACTOR: 1.3,
   DEFAULT_EASE_FACTOR: 2.5,
   MAX_EASE_FACTOR: 3.5,
   MAX_INTERVAL_SECONDS: 60 * 60 * 24 * 7, // 7 days max interval
-};
+
+  // SM-2 Algorithm Modifiers for Ease Factor Calculation
+  SM2_MODIFIERS: {
+    Q_PERFECT_INCREASE: 0.2,      // The baseline increase (when quality = 5)
+    Q_MAX_RATING: 5,              // The highest possible quality rating (used in 5 - q)
+    Q_PRIMARY_PENALTY: 0.08,      // The main linear penalty per missed point (5 - q)
+    Q_SECONDARY_PENALTY: 0.02,    // The compounding penalty (makes poor answers hurt more)
+    Q_MIN_RATING: 1,              // The minimum allowed quality rating for clamping
+  },
+} as const; 
+
 
 /**
  * ======================================
@@ -26,10 +52,25 @@ const BASE = {
  * - Slightly increases on perfect answers
  */
 function calculateNewEaseFactor(easeFactor: number, quality: number): number {
-  const q = Math.max(1, Math.min(5, quality));
-  const newEf = easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+  const { Q_MIN_RATING, Q_MAX_RATING, Q_PERFECT_INCREASE, Q_PRIMARY_PENALTY, Q_SECONDARY_PENALTY } = BASE.SM2_MODIFIERS;
+  
+  // Clamp input quality (q) to be between 1 and 5
+  const q = Math.max(Q_MIN_RATING, Math.min(Q_MAX_RATING, quality));
 
-  // Clamp EF between min and max to avoid extreme growth
+  // Core SM-2 formula: newEf = oldEf + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+  const penaltyDifference = Q_MAX_RATING - q;
+  
+  const newEf = 
+    easeFactor + 
+    (
+      Q_PERFECT_INCREASE - 
+      penaltyDifference * (
+        Q_PRIMARY_PENALTY + 
+        penaltyDifference * Q_SECONDARY_PENALTY
+      )
+    );
+
+  // Clamp EF between min and max bounds
   return Math.min(BASE.MAX_EASE_FACTOR, Math.max(BASE.MIN_EASE_FACTOR, Math.round(newEf * 100) / 100));
 }
 
@@ -122,7 +163,8 @@ export function getUpdatedProgress(currentProgress: UserProgress | null, quality
     last_successful_date: null,
     memory_tier: 0,
     lapses: 0,
-    notes: null
+    notes: null,
+    created_at: now,
   };
 
   // Update Ease Factor

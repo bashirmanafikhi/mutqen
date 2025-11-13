@@ -1,17 +1,11 @@
-import { Surah } from "../../models/QuranModels";
-import { getDb } from "../DatabaseConnection";
+// src/services/surahService.ts
 
-export async function fetchAllSurahs(): Promise<Surah[]> {
-  const db = await getDb();
-  const query = `
-    SELECT id, name, name_without_tashkeel, page_id, first_word_id, last_word_id, aya_count, revelation_place 
-    FROM quran_suras 
-    ORDER BY id ASC;
-  `;
-  try {
-    return await db.getAllAsync<Surah>(query);
-  } catch (error) {
-    console.error("❌ Error fetching surahs:", error);
-    throw error;
-  }
+import { quran_suras } from "@/db/schema";
+import { getDrizzleDb } from "../DrizzleConnection";
+
+export async function fetchAllSurahs() {
+  const db = await getDrizzleDb();
+  const rows = await db.select().from(quran_suras).orderBy(quran_suras.id);
+  // rows is typed and maps to the table columns
+  return rows;
 }
