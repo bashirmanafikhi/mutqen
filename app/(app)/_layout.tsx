@@ -2,7 +2,7 @@
 import { useSettings } from '@/context/AppSettingContext';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Drawer } from 'expo-router/drawer';
-import { Text, View } from 'react-native';
+import { Linking, Share, Text, TouchableOpacity, View } from 'react-native';
 
 // ---------------------------------------------
 // Custom Drawer Content
@@ -35,6 +35,54 @@ function CustomDrawerContent({ isDark, ...props }: any) {
 
       {/* Drawer items */}
       <DrawerItemList {...props} />
+
+      {/* Extra actions */}
+      <View className="px-4 mt-4">
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              const url = 'https://play.google.com/store/apps/details?id=com.bashirmanafikhi.Mutqen';
+              await Linking.openURL(url);
+            } catch (e) {
+              console.warn('Unable to open store URL', e);
+            }
+          }}
+          className="py-3 rounded-lg"
+        >
+          <Text style={{ color: colors.activeText }} className="text-base font-semibold">⭐ قيّم التطبيق</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              const message = 'جرب تطبيق متقن لحفظ القرآن: https://play.google.com/store/apps/details?id=com.bashirmanafikhi.Mutqen';
+              await Share.share({ message });
+            } catch (e) {
+              console.warn('Unable to share app', e);
+            }
+          }}
+          className="py-3 rounded-lg mt-2"
+        >
+          <Text style={{ color: colors.activeText }} className="text-base font-semibold">🔗 مشاركة التطبيق</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              const email = 'bashir.manafikhi@gmail.com';
+              const subject = encodeURIComponent('ملاحظات حول تطبيق متقن');
+              const body = encodeURIComponent('السلام عليكم،\n\nلدي الملاحظات التالية:\n\n');
+              const mailUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+              await Linking.openURL(mailUrl);
+            } catch (e) {
+              console.warn('Unable to open email app', e);
+            }
+          }}
+          className="py-3 rounded-lg mt-2"
+        >
+          <Text style={{ color: colors.activeText }} className="text-base font-semibold">✉️ أرسل ملاحظاتك</Text>
+        </TouchableOpacity>
+      </View>
     </DrawerContentScrollView>
   );
 }

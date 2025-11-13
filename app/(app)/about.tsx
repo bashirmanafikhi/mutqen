@@ -17,12 +17,11 @@ export default function AboutScreen() {
   const subtitleClass = `${fontMap[fontSizeKey]} text-app-lg font-semibold`;
 
   const iconColor = isDark ? '#a5b4fc' : '#4f46e5';
-  const placeholderImageUrl = './assets/images/quran-memorization.png';
 
   const features: { iconName: keyof typeof Ionicons.glyphMap; text: string }[] = [
-    { iconName: 'book', text: 'مسارات تعليمية مخصصة بناءً على احتياجك.' },
-    { iconName: 'moon', text: 'واجهة مستخدم مريحة للعين وتدعم الوضع الداكن.' },
-    { iconName: 'arrow-up', text: 'تحديثات شهرية للمحتوى وإضافة ميزات جديدة.' },
+    { iconName: 'book', text: 'التذكر النشط (Active Recall) لتقوية الذاكرة طويلة المدى.' },
+    { iconName: 'repeat', text: 'الجدولة المتباعدة (Spaced Repetition) لمراجعة ذكية ودقيقة.' },
+    { iconName: 'checkmark-done', text: 'عرض كلمة بكلمة لتصحيح الأخطاء اللفظية وتحسين الدقة.' },
   ];
 
   return (
@@ -36,17 +35,17 @@ export default function AboutScreen() {
         }}
       />
 
-      {/* Title */}
+      {/* مقدمة */}
       <View className="mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">
         <Text className={`${titleClass} mb-2 text-gray-900 dark:text-white`}>
-          💡 رؤيتنا ورسالتنا
+          📖 متقن: برنامجك لإتقان الحفظ القرآني العميق
         </Text>
         <Text className={`${textClass} leading-6 text-gray-600 dark:text-gray-400`}>
-          يهدف هذا التطبيق إلى تسهيل عملية التعلم المستمر...
+          تطبيق <Text className="font-semibold text-indigo-600 dark:text-indigo-400">متقن</Text> هو أداة ذكية تساعدك على نقل حفظك للقرآن من الذاكرة قصيرة المدى إلى الذاكرة طويلة المدى بثبات وفعالية، مستندًا إلى علم الأعصاب الإدراكي وتقنيات تعليمية حديثة.
         </Text>
       </View>
 
-      {/* Image */}
+      {/* صورة وتعريف */}
       <View className="mb-6 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
         <Image
           source={require('@/assets/images/quran-memorization.png')}
@@ -54,21 +53,24 @@ export default function AboutScreen() {
           resizeMode="cover"
         />
         <View className="p-3 bg-white dark:bg-gray-800">
-          <Text className={`${subtitleClass} text-gray-900 dark:text-white`}>
-            التعلم اللامحدود
+          <Text className={`${subtitleClass} text-gray-900 dark:text-white mb-1`}>
+            🎯 التحدي في حفظ القرآن
           </Text>
           <Text className={`${textClass} text-gray-600 dark:text-gray-400`}>
-            تطبيقنا مصمم ليرافقك في كل خطوة من رحلتك التعليمية.
+            الصعوبة الحقيقية ليست في الحفظ الجديد، بل في <Text className="font-semibold">تثبيت المحفوظ ومقاومة النسيان</Text>.  
+            يواجه الحافظ ثلاث عقبات رئيسية: سرعة النسيان، التكرار غير المتوازن بين الآيات، والملل من الطرق التقليدية.
           </Text>
         </View>
       </View>
 
-      {/* Features */}
+      {/* الحلول والميزات */}
       <View className="mb-6 p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">
         <Text className={`${subtitleClass} text-gray-900 dark:text-white mb-3`}>
-          ميزات التطبيق الأساسية
+          💡 الحل الذكي من متقن
         </Text>
-
+        <Text className={`${textClass} mb-4 text-gray-600 dark:text-gray-400`}>
+          يجمع متقن بين التقنية والعلم العصبي لتقديم تجربة حفظ فعّالة ومدروسة عبر آليات حديثة.
+        </Text>
 
         {features.map((item, index) => (
           <View
@@ -83,31 +85,34 @@ export default function AboutScreen() {
             </Text>
           </View>
         ))}
-
       </View>
 
-      {/* Buttons */}
-      <View className="flex-row justify-around mb-8">
+      {/* الإرشادات */}
+      <View className="mb-8 p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">
+        <Text className={`${subtitleClass} text-gray-900 dark:text-white mb-3`}>
+          ✅ إرشادات لتحقيق الإتقان
+        </Text>
+        <Text className={`${textClass} text-gray-600 dark:text-gray-400`}>
+          • اجعل متقن جزءًا من روتينك اليومي.{"\n"}
+          • أكمل التحديات قبل مغادرة الجلسة.{"\n"}
+          • اقرأ بصوت مرتفع وببطء مع مراعاة التجويد.{"\n"}
+          • امنح ذاكرتك فرصة للتذكر قبل الكشف عن الآية.{"\n"}
+          • راجع وحدات كبيرة كالجزء أو السورة لضمان ترابط المعاني.
+        </Text>
+      </View>
+
+      {/* أزرار */}
+      <View className="flex-row justify-center mb-8">
         <TouchableOpacity
           onPress={() => setFontSizeKey('large')}
           className="flex-row items-center px-5 py-3 rounded-full bg-indigo-500 dark:bg-indigo-600 shadow-lg"
         >
-          <Ionicons name="resize-outline" size={18} color="#fff" className="mr-2" />
-          <Text className={`${textClass} font-bold text-white`}>تكبير الخط</Text>
+          <Ionicons name="resize-outline" size={18} color="#fff" />
+          <Text className={`${textClass} font-bold text-white ml-2`}>تكبير الخط</Text>
         </TouchableOpacity>
-
-        {/* <TouchableOpacity
-          onPress={() => console.log('Sharing App...')}
-          className="flex-row items-center px-5 py-3 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg"
-        >
-          <Ionicons name="share-social-outline" size={18} color={isDark ? '#fff' : '#111827'} className="mr-2" />
-          <Text className={`${textClass} font-bold text-gray-900 dark:text-white`}>
-            مشاركة
-          </Text>
-        </TouchableOpacity> */}
       </View>
 
-      {/* Footer */}
+      {/* تذييل */}
       <Text className={`${fontMap[fontSizeKey]} text-center mb-6 text-gray-600 dark:text-gray-400`}>
         الإصدار: 1.0.0 | جميع الحقوق محفوظة {new Date().getFullYear()}
       </Text>
