@@ -93,7 +93,7 @@ export interface UserProgress {
     ease_factor: number; // usually starts at 2.5
     next_review_date: string; // ISO date string
     last_review_date: string; // ISO date string
-    last_successful_date: string | null; // ISO date string (nullable)
+    last_successful_date?: string | null; // ISO date string (nullable)
     
     /*
       0 -> (not learned)
@@ -103,8 +103,8 @@ export interface UserProgress {
       4 -> (mastered)
     */
     memory_tier: number; 
-    lapses: number; // number of times forgotten
-    notes: string | null; // user notes (nullable)
+    lapses?: number; // number of times forgotten
+    notes?: string | null; // user notes (nullable)
 }
 
 

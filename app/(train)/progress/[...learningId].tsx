@@ -358,7 +358,7 @@ export default function ReadProgress() {
         ? Math.round(allProgress.reduce((acc, p) => acc + p.ease_factor, 0) / wordsWithProgress * 100) / 100
         : 0;
       const totalReviews = allProgress.reduce((acc, p) => acc + p.review_count, 0);
-      const totalLapses = allProgress.reduce((acc, p) => acc + p.lapses, 0);
+      const totalLapses = allProgress.reduce((acc, p) => acc + (p.lapses ?? 0), 0);
 
       setAnalytics({
         totalWords,

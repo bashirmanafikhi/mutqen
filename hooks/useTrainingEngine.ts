@@ -1,0 +1,247 @@
+// src/hooks/useTrainingEngine.ts
+import { UserProgress } from '@/models/QuranModels';
+import { TrainingState, TrainingStats } from '@/models/TrainingModels';
+import { WordWithProgress, hasMoreDueReviews } from '@/services/data/TrainingQueryService';
+import { upsertProgressDb } from '@/services/data/userProgressQueries';
+import { getUpdatedProgress } from '@/services/SpacedRepetitionService';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+interface UseTrainingEngineProps {
+  startId: number;
+  endId: number;
+  words: WordWithProgress[];
+  dueReviews: Map<number, string>;
+  onLoadMore: () => void;
+  hasMoreWords: boolean;
+}
+
+export function useTrainingEngine({
+  startId,
+  endId,
+  words,
+  dueReviews,
+  onLoadMore,
+  hasMoreWords
+}: UseTrainingEngineProps) {
+  const [state, setState] = useState<TrainingState>({
+    mode: 'mixed',
+    currentWordIndex: 0,
+    words: [],
+    revealedWords: [],
+    dueReviews: new Map(),
+    isAtCanStop: false,
+    hasMoreDueReviews: false,
+    showReviewAlert: false,
+    reviewAlertWordId: undefined
+  });
+
+  const [stats, setStats] = useState<TrainingStats>({
+    totalWords: 0,
+    wordsReviewed: 0,
+    wordsMemorized: 0,
+    currentStreak: 0,
+    accuracy: 100,
+    sessionStartTime: new Date()
+  });
+
+  const currentStreakRef = useRef(0);
+  const correctAnswersRef = useRef(0);
+  const totalAnswersRef = useRef(0);
+
+  // Initialize training state when words change
+  useEffect(() => {
+    if (words.length > 0) {
+      setState(prev => ({
+        ...prev,
+        words,
+        dueReviews,
+        currentWordIndex: 0,
+        revealedWords: []
+      }));
+    }
+  }, [words, dueReviews]);
+
+  // Check for due reviews and can-stop boundaries
+  useEffect(() => {
+    const checkTrainingState = async () => {
+      const currentWord = state.words[state.currentWordIndex];
+      if (!currentWord) return;
+
+      // Check if current word is at can-stop boundary
+      const isAtCanStop = currentWord.can_stop || false;
+      
+      // Check if there are more due reviews ahead
+      const moreDueReviews = await hasMoreDueReviews(currentWord.id, endId);
+
+      setState(prev => ({
+        ...prev,
+        isAtCanStop,
+        hasMoreDueReviews: moreDueReviews
+      }));
+
+      // Check if we need to show review alert
+      if (dueReviews.has(currentWord.id) && !state.showReviewAlert) {
+        setState(prev => ({
+          ...prev,
+          showReviewAlert: true,
+          reviewAlertWordId: currentWord.id
+        }));
+      }
+    };
+
+    checkTrainingState();
+  }, [state.currentWordIndex, state.words, dueReviews, endId, state.showReviewAlert]);
+
+  // Auto-load more words when approaching end of current batch
+  useEffect(() => {
+    if (hasMoreWords && state.currentWordIndex >= state.words.length - 5) {
+      onLoadMore();
+    }
+  }, [state.currentWordIndex, state.words.length, hasMoreWords, onLoadMore]);
+
+  const getCurrentWord = useCallback((): WordWithProgress | null => {
+    return state.words[state.currentWordIndex] || null;
+  }, [state.words, state.currentWordIndex]);
+
+  const getRevealedWords = useCallback((): WordWithProgress[] => {
+    return state.revealedWords;
+  }, [state.revealedWords]);
+
+  const updateProgress = useCallback(async (quality: number) => {
+    const currentWord = getCurrentWord();
+    if (!currentWord) return;
+
+    try {
+      // Prepare current progress data
+      const currentProgress: UserProgress | null = currentWord.current_interval !== undefined ? {
+        word_id: currentWord.id,
+        current_interval: currentWord.current_interval,
+        review_count: currentWord.review_count || 0,
+        lapses: currentWord.lapses || 0,
+        ease_factor: currentWord.ease_factor || 2.5,
+        next_review_date: currentWord.next_review_date || new Date().toISOString(),
+        last_review_date: currentWord.last_review_date || new Date().toISOString(),
+        last_successful_date: currentWord.last_successful_date,
+        memory_tier: currentWord.memory_tier || 0,
+        notes: currentWord.notes,
+        created_at: new Date().toISOString(),
+      } : null;
+
+      // Update progress using spaced repetition algorithm
+      const updatedProgress = getUpdatedProgress(currentProgress, quality);
+      await upsertProgressDb(updatedProgress);
+
+      // Update stats
+      const isCorrect = quality >= 3;
+      totalAnswersRef.current += 1;
+      if (isCorrect) {
+        correctAnswersRef.current += 1;
+        currentStreakRef.current += 1;
+      } else {
+        currentStreakRef.current = 0;
+      }
+
+      const accuracy = totalAnswersRef.current > 0 
+        ? Math.round((correctAnswersRef.current / totalAnswersRef.current) * 100)
+        : 100;
+
+      setStats(prev => ({
+        ...prev,
+        wordsReviewed: prev.wordsReviewed + 1,
+        wordsMemorized: isCorrect ? prev.wordsMemorized + 1 : prev.wordsMemorized,
+        currentStreak: currentStreakRef.current,
+        accuracy
+      }));
+
+      // Add to revealed words and move to next word
+      setState(prev => ({
+        ...prev,
+        revealedWords: [...prev.revealedWords, currentWord],
+        currentWordIndex: prev.currentWordIndex + 1,
+        showReviewAlert: false,
+        reviewAlertWordId: undefined
+      }));
+
+      // Remove from due reviews if it was there
+      if (state.dueReviews.has(currentWord.id)) {
+        const newDueReviews = new Map(state.dueReviews);
+        newDueReviews.delete(currentWord.id);
+        setState(prev => ({ ...prev, dueReviews: newDueReviews }));
+      }
+
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  }, [getCurrentWord, state.dueReviews]);
+
+  const jumpToReview = useCallback(async (wordId: number) => {
+    const reviewIndex = state.words.findIndex(word => word.id === wordId);
+    if (reviewIndex !== -1) {
+      setState(prev => ({
+        ...prev,
+        currentWordIndex: reviewIndex,
+        mode: 'review',
+        showReviewAlert: false,
+        reviewAlertWordId: undefined
+      }));
+    } else {
+      // If review word not in current batch, we need to load it
+      // This would require additional logic to fetch specific word
+      console.log('Review word not in current batch, need to implement loading');
+    }
+  }, [state.words]);
+
+  const continueMemorization = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      mode: 'memorization'
+    }));
+  }, []);
+
+  const switchToReviewMode = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      mode: 'review'
+    }));
+  }, []);
+
+  const dismissReviewAlert = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      showReviewAlert: false,
+      reviewAlertWordId: undefined
+    }));
+  }, []);
+
+  const canContinue = useCallback((): boolean => {
+    return state.currentWordIndex < state.words.length - 1;
+  }, [state.currentWordIndex, state.words.length]);
+
+  const isFinished = useCallback((): boolean => {
+    return state.currentWordIndex >= state.words.length && state.words.length > 0;
+  }, [state.currentWordIndex, state.words.length]);
+
+  return {
+    // State
+    state,
+    stats,
+    
+    // Current word info
+    currentWord: getCurrentWord(),
+    revealedWords: getRevealedWords(),
+    hasMoreWords: state.currentWordIndex < state.words.length - 1,
+    
+    // Actions
+    updateProgress,
+    jumpToReview,
+    continueMemorization,
+    switchToReviewMode,
+    dismissReviewAlert,
+    
+    // Status checks
+    canContinue: canContinue(),
+    isFinished: isFinished(),
+    hasDueReviews: state.dueReviews.size > 0,
+    shouldShowReviewAlert: state.showReviewAlert
+  };
+}

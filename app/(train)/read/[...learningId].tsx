@@ -37,7 +37,7 @@ const groupWordsIntoAyasFromWords = (words: QuranWord[], progressMap?: Record<nu
     words.forEach((word) => {
         const key = `${word.sura_id}-${word.aya_number}`;
         const progress = progressMap?.[word.id];
-        const isHard = progress && progress.ease_factor <= 2 && progress.lapses >= 3;
+        const isHard = progress && progress.ease_factor <= 2 && (progress.lapses ?? 0) >= 3;
 
         const structuredWord: AyaWord = {
             text: word.text,

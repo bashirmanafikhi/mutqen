@@ -1,99 +1,110 @@
 {
-  "home": {
-    "title": "Mutqen | Quran Memorization",
-    "loading": "Loading...",
-    "empty_title": "You have no saved items yet.",
-    "empty_hint": "Tap the \"+\" button to add a new item!"
-  },
-  "learningList": {
-    "loading_list": "Loading saved items...",
-    "all_quran": "Entire Quran"
-  },
-  "actions": {
-    "read": "Read",
-    "train": "Train",
-    "progress": "Progress",
-    "delete": "Delete"
-  },
-  "add_new": {
-    "title": "Add New Learning",
-    "cancel": "Cancel",
-    "option": {
-      "surah": "Surahs",
-      "juz": "Juz (Part)",
-      "hizb": "Hizbs",
-      "sahaba": "Sahaba Divisions",
-      "page": "Pages",
-      "custom_soon": "Custom selection (coming soon)"
+    "home": {
+        "title": "Mutqen | Quran Memorization",
+        "loading": "Loading...",
+        "empty_title": "You have no saved items yet.",
+        "empty_hint": "Tap the \"+\" button to add a new item!"
+    },
+    "learningList": {
+        "loading_list": "Loading saved items...",
+        "all_quran": "Entire Quran"
+    },
+    "actions": {
+        "read": "Read",
+        "train": "Train",
+        "progress": "Progress",
+        "delete": "Delete"
+    },
+    "add_new": {
+        "title": "Add New Learning",
+        "cancel": "Cancel",
+        "option": {
+            "surah": "Surahs",
+            "juz": "Juz (Part)",
+            "hizb": "Hizbs",
+            "sahaba": "Sahaba Divisions",
+            "page": "Pages",
+            "custom_soon": "Custom selection (coming soon)"
+        }
+    },
+    "cloze": {
+        "title": "Cloze Trainer",
+        "loading": "Loading trainer...",
+        "no_words": "No words in this range.",
+        "back": "Back",
+        "mode_mcq": "Multiple Choice",
+        "mode_typing": "Typing",
+        "check": "Check",
+        "blank": "Blank {index}",
+        "prev_alert_title": "Start of range",
+        "prev_alert_msg": "You are at the start of the range.",
+        "end_aya_title": "End of ayas",
+        "end_aya_msg": "You reached the end of the range.",
+        "regen": "Regenerate",
+        "previous": "Previous",
+        "next": "Next",
+        "finish": "Finish",
+        "result_title": "Result",
+        "result_ok": "OK",
+        "placeholder": "Type the word here",
+        "auto": "Auto"
+    },
+    "read": {
+        "title": "Read & Review",
+        "loading": "Loading ayas...",
+        "load_more": "Loading more...",
+        "end": "End of reading",
+        "show_tafseer": "Show tafseer ▼",
+        "hide_tafseer": "Hide tafseer ▲",
+        "no_tafseer": "No tafseer for this aya."
+    },
+    "progress": {
+        "no_data": "No progress data in this range.",
+        "loading_progress": "loading progress"
+    },
+    "training": {
+        "loading": "Loading training words...",
+        "revealed_title": "Revealed Words ({{count}})",
+        "finished": "🎉 Training finished!",
+        "restart": "Restart",
+        "remaining": "{{count}} remaining",
+        "change": "Change",
+        "memory_labels": [
+            "(not learned)",
+            "(weak)",
+            "(fair)",
+            "(good)",
+            "(mastered)"
+        ],
+        "change_confirm": "Change",
+        "preparing_session": "Preparing Session...",
+        "loading_words": "Loading words and setting up the review system",
+        "current_card": "Current Card",
+        "revealed_words": "Revealed Words",
+        "switch_to_review": "Switch to Review",
+        "no_more_words": "No more words available",
+        "session_completed": "Session completed successfully!",
+        "session_summary": "Session Summary",
+        "restart_session": "Restart Session",
+        "return_home": "Return to Home",
+        "view_progress": "View Full Progress"
+    },
+    "errors": {
+        "load_words": "Failed to fetch words for the range."
+    },
+    "common": {
+        "ok": "OK",
+        "soon": "Coming soon",
+        "error": "Error"
+    },
+    "settings": {
+        "title": "App Settings",
+        "language": "Language",
+        "theme_mode": "Theme Mode",
+        "dark_mode": "Dark Mode",
+        "font_size": "Font Size",
+        "phone": "Phone",
+        "light": "Light",
+        "dark": "Dark"
     }
-  },
-  "cloze": {
-    "title": "Cloze Trainer",
-    "loading": "Loading trainer...",
-    "no_words": "No words in this range.",
-    "back": "Back",
-    "mode_mcq": "Multiple Choice",
-    "mode_typing": "Typing",
-    "check": "Check",
-    "blank": "Blank {index}",
-    "prev_alert_title": "Start of range",
-    "prev_alert_msg": "You are at the start of the range.",
-    "end_aya_title": "End of ayas",
-    "end_aya_msg": "You reached the end of the range.",
-    "regen": "Regenerate",
-    "previous": "Previous",
-    "next": "Next",
-    "finish": "Finish",
-    "result_title": "Result",
-    "result_ok": "OK",
-    "placeholder": "Type the word here",
-    "auto": "Auto"
-  },
-  "read": {
-    "title": "Read & Review",
-    "loading": "Loading ayas...",
-    "load_more": "Loading more...",
-    "end": "End of reading",
-    "show_tafseer": "Show tafseer ▼",
-    "hide_tafseer": "Hide tafseer ▲",
-    "no_tafseer": "No tafseer for this aya."
-  },
-  "progress": {
-    "no_data": "No progress data in this range.",
-    "loading_progress": "loading progress"
-  },
-  "training": {
-    "loading": "Loading training words...",
-    "revealed_title": "Revealed Words ({{count}})",
-    "finished": "🎉 Training finished!",
-    "restart": "Restart",
-    "remaining": "{{count}} remaining",
-    "change": "Change",
-    "memory_labels": [
-      "(not learned)",
-      "(weak)",
-      "(fair)",
-      "(good)",
-      "(mastered)"
-    ],
-    "change_confirm": "Change"
-  },
-  "errors": {
-    "load_words": "Failed to fetch words for the range."
-  },
-  "common": {
-    "ok": "OK",
-    "soon": "Coming soon",
-    "error": "Error"
-  },
-  "settings": {
-    "title": "App Settings",
-    "language": "Language",
-    "theme_mode": "Theme Mode",
-    "dark_mode": "Dark Mode",
-    "font_size": "Font Size",
-    "phone": "Phone",
-    "light": "Light",
-    "dark": "Dark"
-  }
 }
