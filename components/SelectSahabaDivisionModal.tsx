@@ -1,6 +1,6 @@
 import { useSettings } from '@/context/AppSettingContext';
 import { QuranDivision } from '@/models/QuranModels';
-import { fetchAllSahabaDivisions } from '@/services/data/sahabaDivisionQueries';
+import { fetchAllSahabaDivisions } from '@/services/data/divisionQueries';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

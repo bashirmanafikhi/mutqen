@@ -1,20 +1,19 @@
 {
   "home": {
     "title": "Mutqen | Quran Memorization",
-    "header": "Saved Items",
     "loading": "Loading...",
     "empty_title": "You have no saved items yet.",
     "empty_hint": "Tap the \"+\" button to add a new item!"
   },
   "learningList": {
     "loading_list": "Loading saved items...",
-    "no_items": "No saved items yet. Tap + to add one."
+    "all_quran": "Entire Quran"
   },
   "actions": {
-    "read": "📖 Read",
-    "train": "💪 Train",
-    "progress": "📊 Progress",
-    "delete": "🗑️ Delete"
+    "read": "Read",
+    "train": "Train",
+    "progress": "Progress",
+    "delete": "Delete"
   },
   "add_new": {
     "title": "Add New Learning",
@@ -46,9 +45,9 @@
     "next": "Next",
     "finish": "Finish",
     "result_title": "Result",
-    "result_ok": "OK"
-    ,"placeholder":"Type the word here",
-    "auto":"Auto"
+    "result_ok": "OK",
+    "placeholder": "Type the word here",
+    "auto": "Auto"
   },
   "read": {
     "title": "Read & Review",
@@ -60,7 +59,8 @@
     "no_tafseer": "No tafseer for this aya."
   },
   "progress": {
-    "no_data": "No progress data in this range."
+    "no_data": "No progress data in this range.",
+    "loading_progress": "loading progress"
   },
   "training": {
     "loading": "Loading training words...",
@@ -69,7 +69,13 @@
     "restart": "Restart",
     "remaining": "{{count}} remaining",
     "change": "Change",
-    "memory_labels": ["(not learned)", "(weak)", "(fair)", "(good)", "(mastered)"],
+    "memory_labels": [
+      "(not learned)",
+      "(weak)",
+      "(fair)",
+      "(good)",
+      "(mastered)"
+    ],
     "change_confirm": "Change"
   },
   "errors": {

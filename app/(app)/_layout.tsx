@@ -1,6 +1,7 @@
 // app/(app)/_layout.tsx
 import { useSettings } from '@/context/AppSettingContext';
 import { AppActionsService } from '@/services/Utilities';
+import { Ionicons } from '@expo/vector-icons';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Drawer } from 'expo-router/drawer';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -16,6 +17,7 @@ function CustomDrawerContent({ isDark, ...props }: any) {
     textSecondary: isDark ? '#d1d5db' : '#6b7280',
     buttonBg: isDark ? '#374151' : '#E0E7FF',
     buttonText: isDark ? '#E0E7FF' : '#1E3A8A',
+    iconColor: isDark ? '#E0E7FF' : '#1E3A8A',
   };
 
   return (
@@ -26,12 +28,22 @@ function CustomDrawerContent({ isDark, ...props }: any) {
     >
       {/* Header */}
       <View className="px-5 py-6 border-b" style={{ borderColor: colors.divider }}>
-        <Text style={{ color: colors.textPrimary }} className="text-2xl font-bold">
-          📘 تطبيق متقن
-        </Text>
-        <Text style={{ color: colors.textSecondary }} className="text-sm mt-1">
-          تطبيق مساعدة لحفظ القرآن الكريم
-        </Text>
+        <View className="flex-row items-center">
+          <Ionicons
+            name="book"
+            size={28}
+            color={colors.iconColor}
+            style={{ marginRight: 10 }}
+          />
+          <View>
+            <Text style={{ color: colors.textPrimary }} className="text-2xl font-bold">
+              تطبيق متقن
+            </Text>
+            <Text style={{ color: colors.textSecondary }} className="text-sm mt-1">
+              تطبيق مساعدة لحفظ القرآن الكريم
+            </Text>
+          </View>
+        </View>
       </View>
 
       {/* Drawer items */}
@@ -41,28 +53,46 @@ function CustomDrawerContent({ isDark, ...props }: any) {
       <View className="px-4 mt-6 border-t pt-4" style={{ borderColor: colors.divider }}>
         <TouchableOpacity
           onPress={AppActionsService.rateApp}
-          className="py-3 rounded-lg"
+          className="py-3 rounded-lg flex-row items-center"
         >
+          <Ionicons
+            name="star"
+            size={20}
+            color={colors.iconColor}
+            style={{ marginRight: 12 }}
+          />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            ⭐ قيّم التطبيق
+            قيّم التطبيق
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={AppActionsService.shareApp}
-          className="py-3 rounded-lg mt-2"
+          className="py-3 rounded-lg mt-2 flex-row items-center"
         >
+          <Ionicons
+            name="share-social"
+            size={20}
+            color={colors.iconColor}
+            style={{ marginRight: 12 }}
+          />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            🔗 مشاركة التطبيق
+            مشاركة التطبيق
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={AppActionsService.sendFeedback}
-          className="py-3 rounded-lg mt-2"
+          className="py-3 rounded-lg mt-2 flex-row items-center"
         >
+          <Ionicons
+            name="mail"
+            size={20}
+            color={colors.iconColor}
+            style={{ marginRight: 12 }}
+          />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            ✉️ أرسل ملاحظاتك
+            أرسل ملاحظاتك
           </Text>
         </TouchableOpacity>
       </View>
@@ -82,6 +112,8 @@ export default function AppLayout() {
     drawerActiveBg: isDark ? '#374151' : '#4F46E5',
     drawerActiveText: isDark ? '#f9fafb' : '#ffffff',
     drawerInactiveText: isDark ? '#d1d5db' : '#111827',
+    drawerIconColor: isDark ? '#d1d5db' : '#6b7280',
+    drawerActiveIconColor: isDark ? '#f9fafb' : '#ffffff',
   };
 
   return (
@@ -92,13 +124,52 @@ export default function AppLayout() {
         drawerActiveBackgroundColor: colors.drawerActiveBg,
         drawerActiveTintColor: colors.drawerActiveText,
         drawerInactiveTintColor: colors.drawerInactiveText,
-        drawerLabelStyle: { fontSize: 16, fontWeight: '500' },
+        drawerLabelStyle: { fontSize: 16, fontWeight: '500', marginLeft: -16 },
       }}
       drawerContent={(props) => <CustomDrawerContent {...props} isDark={isDark} />}
     >
-      <Drawer.Screen name="index" options={{ drawerLabel: 'الصفحة الرئيسية' }} />
-      <Drawer.Screen name="settings" options={{ drawerLabel: 'الإعدادات' }} />
-      <Drawer.Screen name="about" options={{ drawerLabel: 'حول التطبيق' }} />
+      <Drawer.Screen
+        name="index"
+        options={{
+          drawerLabel: 'الصفحة الرئيسية',
+          drawerIcon: ({ focused, size }) => (
+            <Ionicons
+              className='mr-4'
+              name={focused ? "home" : "home-outline"}
+              size={size}
+              color={focused ? colors.drawerActiveIconColor : colors.drawerIconColor}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="settings"
+        options={{
+          drawerLabel: 'الإعدادات',
+          drawerIcon: ({ focused, size }) => (
+            <Ionicons
+              className='mr-4'
+              name={focused ? "settings" : "settings-outline"}
+              size={size}
+              color={focused ? colors.drawerActiveIconColor : colors.drawerIconColor}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="about"
+        options={{
+          drawerLabel: 'حول التطبيق',
+          drawerIcon: ({ focused, size }) => (
+            <Ionicons
+              className='mr-4'
+              name={focused ? "information-circle" : "information-circle-outline"}
+              size={size}
+              color={focused ? colors.drawerActiveIconColor : colors.drawerIconColor}
+            />
+          ),
+        }}
+      />
     </Drawer>
   );
 }
