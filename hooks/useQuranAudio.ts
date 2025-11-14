@@ -1,84 +1,72 @@
-// hooks/useQuranAudio.ts
-
-import { Audio } from 'expo-av';
+import { AudioPlayer, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { useCallback, useEffect, useState } from 'react';
 
-interface AyaIdentifier {
-    sura_id: number;
-    aya_number: number;
+export interface AyaIdentifier {
+  sura_id: number;
+  aya_number: number;
 }
 
-// 🔗 API Link: Using everyayah.com (Alafasy) as a reliable public source.
-const getAudioUrl = (sura_id: number, aya_number: number): string => {
-    // Format: Sura (3 digits) + Aya (3 digits) -> e.g., 001007.mp3
-    const suraPadded = sura_id.toString().padStart(3, '0');
-    const ayaPadded = aya_number.toString().padStart(3, '0');
-    return `https://everyayah.com/data/Alafasy_128kbps/${suraPadded}${ayaPadded}.mp3`;
-};
+const getAudioUrl = (sura_id: number, aya_number: number) =>
+  `https://everyayah.com/data/Alafasy_128kbps/${sura_id
+    .toString()
+    .padStart(3, '0')}${aya_number.toString().padStart(3, '0')}.mp3`;
 
-/**
- * Custom hook to manage audio playback for a single Quran verse.
- */
-export const useAudioPlayer = () => {
-    const [playingKey, setPlayingKey] = useState<string | null>(null);
-    const [playbackInstance, setPlaybackInstance] = useState<Audio.Sound | null>(null);
+export const useQuranAudio = () => {
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+  const player: AudioPlayer = useAudioPlayer();
+  const status = useAudioPlayerStatus(player);
 
-    // Helper to build key
-    const ayaKey = (sura: number, aya: number) => `${sura}-${aya}`;
+  const ayaKey = (sura: number, aya: number) => `${sura}-${aya}`;
 
-    // 🔊 Play/Pause Toggle Function
-    const onPlayPause = useCallback(async (item: AyaIdentifier) => {
-        const key = ayaKey(item.sura_id, item.aya_number);
-        const isCurrentlyPlaying = playingKey === key;
+  const onPlayPause = useCallback(
+    async (item: AyaIdentifier) => {
+      const key = ayaKey(item.sura_id, item.aya_number);
+      const isCurrentlyPlaying = playingKey === key;
 
-        if (playbackInstance) {
-            if (isCurrentlyPlaying) {
-                // 🛑 Pause the current playing verse
-                await playbackInstance.pauseAsync();
-                setPlayingKey(null);
-                return;
-            } else {
-                // 🔇 Unload the previous one if we switch verses
-                await playbackInstance.unloadAsync();
-                setPlaybackInstance(null);
-                setPlayingKey(null);
-            }
+      try {
+        // Toggle pause/resume if same aya
+        if (isCurrentlyPlaying) {
+          if (status.playing) {
+            await player.pause();
+            setPlayingKey(null); // reset key on manual pause
+          } else {
+            await player.play();
+            setPlayingKey(key); // resume playing
+          }
+          return;
         }
 
-        try {
-            // 🎧 Play the new verse
-            const url = getAudioUrl(item.sura_id, item.aya_number);
-            const { sound } = await Audio.Sound.createAsync(
-                { uri: url },
-                { shouldPlay: true }
-            );
-
-            // Set a handler for when playback finishes
-            sound.setOnPlaybackStatusUpdate((status: any) => {
-                if (status.isLoaded && status.didJustFinish) {
-                    setPlayingKey(null);
-                    sound.unloadAsync();
-                    setPlaybackInstance(null);
-                }
-            });
-
-            setPlaybackInstance(sound);
-            setPlayingKey(key);
-
-        } catch (error) {
-            console.error('Failed to load or play audio:', error);
-            setPlayingKey(null);
+        // Stop any other playing aya
+        if (playingKey) {
+          await player.pause();
+          setPlayingKey(null);
         }
-    }, [playingKey, playbackInstance]);
 
-    // 🧹 Cleanup on component unmount
-    useEffect(() => {
-        return playbackInstance
-            ? () => {
-                playbackInstance.unloadAsync();
-            }
-            : undefined;
-    }, [playbackInstance]);
+        // Load new aya and play
+        await player.replace(getAudioUrl(item.sura_id, item.aya_number));
+        await player.play();
+        setPlayingKey(key);
 
-    return { playingKey, onPlayPause, ayaKey };
+      } catch (err) {
+        console.error("Audio playback error:", err);
+        setPlayingKey(null);
+      }
+    },
+    [playingKey, player, status.playing]
+  );
+
+  // // Automatically reset playingKey when audio ends or stops
+  // useEffect(() => {
+  //   if (!status.playing && playingKey) {
+  //     setPlayingKey(null);
+  //   }
+  // }, [status.playing, playingKey]);
+
+  useEffect(() => {
+    if (status.didJustFinish) {
+      setPlayingKey(null);
+    }
+  }, [status.didJustFinish]);
+
+  return { playingKey, onPlayPause, ayaKey, status };
 };

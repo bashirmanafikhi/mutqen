@@ -1,4 +1,5 @@
 // screens/ReadMemorizationScreen.tsx
+import { useQuranAudio } from "@/hooks/useQuranAudio";
 import { AyaTafseer, QuranWord, UserProgress } from "@/models/QuranModels";
 import { fetchTafseersForAyaPairs } from "@/services/data/tafseerQueries";
 import { fetchProgressRangeDb } from "@/services/data/userProgressQueries";
@@ -9,8 +10,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Text, TouchableOpacity, View } from "react-native";
-// استيراد الخطاف الجديد
-import { useAudioPlayer } from "@/hooks/useQuranAudio"; // تأكد من المسار الصحيح
+
 
 // ---------------------------------------------
 // Local Types
@@ -175,7 +175,7 @@ export default function ReadMemorizationScreen() {
     const [progressMap, setProgressMap] = useState<Record<number, UserProgress>>({});
     
     // 🎧 استخدام الخطاف المخصص للصوت
-    const { playingKey, onPlayPause, ayaKey } = useAudioPlayer();
+    const { playingKey, onPlayPause, ayaKey } = useQuranAudio();
 
     const onToggleExpand = useCallback((key: string) => {
         setExpandedKey((prev) => (prev === key ? null : key));

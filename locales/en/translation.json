@@ -64,10 +64,10 @@
   },
   "training": {
     "loading": "Loading training words...",
-    "revealed_title": "Revealed Words ({count})",
+    "revealed_title": "Revealed Words ({{count}})",
     "finished": "🎉 Training finished!",
     "restart": "Restart",
-    "remaining": "{count} remaining",
+    "remaining": "{{count}} remaining",
     "change": "Change",
     "memory_labels": ["(not learned)", "(weak)", "(fair)", "(good)", "(mastered)"],
     "change_confirm": "Change"
