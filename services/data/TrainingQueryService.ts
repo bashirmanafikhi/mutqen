@@ -1,6 +1,6 @@
 // src/services/TrainingQueryService.ts
 import { quran_suras, quran_words, user_progress } from '@/db/schema';
-import { and, asc, between, desc, eq, gt, gte, lte, sql } from 'drizzle-orm';
+import { and, asc, between, desc, eq, gt, gte, isNotNull, isNull, lte, sql } from 'drizzle-orm';
 import { getDrizzleDb } from '../DrizzleConnection';
 
 export interface WordWithProgress {
@@ -104,6 +104,59 @@ export async function fetchWordsWithProgressBatch(
 /**
  * Finds due reviews across the entire range (for review alerts)
  */
+  /**
+   * Fetches a single word by ID with its progress data
+   * Used when jumping to a specific word that may not be in current batch
+   */
+  export async function fetchWordById(wordId: number): Promise<WordWithProgress | null> {
+    let retries = 0;
+    const maxRetries = 2;
+  
+    while (retries <= maxRetries) {
+      try {
+        const db = await getDrizzleDb();
+      
+        const data = await db
+          .select({
+            id: quran_words.id,
+            sura_id: quran_words.sura_id,
+            aya_number: quran_words.aya_number,
+            page_id: quran_words.page_id,
+            text: quran_words.text,
+            is_end_of_aya: quran_words.is_end_of_aya,
+            can_stop: quran_words.can_stop,
+            sura_name: quran_suras.name,
+            current_interval: user_progress.current_interval,
+            review_count: user_progress.review_count,
+            lapses: user_progress.lapses,
+            ease_factor: user_progress.ease_factor,
+            next_review_date: user_progress.next_review_date,
+            last_review_date: user_progress.last_review_date,
+            last_successful_date: user_progress.last_successful_date,
+            memory_tier: user_progress.memory_tier,
+            notes: user_progress.notes,
+          })
+          .from(quran_words)
+          .leftJoin(user_progress, eq(quran_words.id, user_progress.word_id))
+          .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
+          .where(eq(quran_words.id, wordId))
+          .limit(1);
+
+        return data[0] as WordWithProgress | undefined || null;
+      } catch (error) {
+        retries++;
+        if (retries > maxRetries) {
+          console.error('Error fetching word by ID (final attempt):', error);
+          return null;
+        }
+        console.warn(`Error fetching word ${wordId}, retrying (${retries}/${maxRetries}):`, error);
+        await new Promise(resolve => setTimeout(resolve, 100 * retries));
+      }
+    }
+  
+    return null;
+  }
+
 export async function findDueReviewsInRange(
   startId: number, 
   endId: number
@@ -239,4 +292,105 @@ export async function hasMoreDueReviews(
     console.error('Error checking for more due reviews:', error);
     return false;
   }
+}
+
+/**
+ * Finds the latest saved word in the given range (word with progress data, ordered by last_review_date)
+ */
+export async function findLatestSavedWord(
+  startId: number,
+  endId: number
+): Promise<WordWithProgress | null> {
+  const db = await getDrizzleDb();
+
+  try {
+    const data = await db
+      .select({
+        id: quran_words.id,
+        sura_id: quran_words.sura_id,
+        aya_number: quran_words.aya_number,
+        page_id: quran_words.page_id,
+        text: quran_words.text,
+        is_end_of_aya: quran_words.is_end_of_aya,
+        can_stop: quran_words.can_stop,
+        sura_name: quran_suras.name,
+        current_interval: user_progress.current_interval,
+        review_count: user_progress.review_count,
+        lapses: user_progress.lapses,
+        ease_factor: user_progress.ease_factor,
+        next_review_date: user_progress.next_review_date,
+        last_review_date: user_progress.last_review_date,
+        last_successful_date: user_progress.last_successful_date,
+        memory_tier: user_progress.memory_tier,
+        notes: user_progress.notes,
+      })
+      .from(quran_words)
+      .innerJoin(user_progress, eq(quran_words.id, user_progress.word_id))
+      .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
+      .where(
+        and(
+          between(quran_words.id, startId, endId),
+          isNotNull(user_progress.last_review_date)
+        )
+      )
+      .orderBy(desc(user_progress.last_review_date)) // Latest first
+      .limit(1);
+
+    return data[0] as WordWithProgress | undefined || null;
+  } catch (error) {
+    console.error('Error finding latest saved word:', error);
+    return null;
+  }
+}
+
+/**
+ * Finds the first word in the range that does NOT have progress (unlearned)
+ */
+export async function findFirstUnlearnedWord(
+  startId: number,
+  endId: number
+): Promise<WordWithProgress | null> {
+  let retries = 0;
+  const maxRetries = 2;
+
+  while (retries <= maxRetries) {
+    try {
+      const db = await getDrizzleDb();
+
+      const data = await db
+        .select({
+          id: quran_words.id,
+          sura_id: quran_words.sura_id,
+          aya_number: quran_words.aya_number,
+          page_id: quran_words.page_id,
+          text: quran_words.text,
+          is_end_of_aya: quran_words.is_end_of_aya,
+          can_stop: quran_words.can_stop,
+          sura_name: quran_suras.name,
+        })
+        .from(quran_words)
+        .leftJoin(user_progress, eq(quran_words.id, user_progress.word_id))
+        .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
+        .where(
+          and(
+            between(quran_words.id, startId, endId),
+            isNull(user_progress.word_id)
+          )
+        )
+        .orderBy(asc(quran_words.id))
+        .limit(1);
+
+      return (data[0] as WordWithProgress | undefined) || null;
+    } catch (error) {
+      retries++;
+      if (retries > maxRetries) {
+        console.error('Error finding first unlearned word (final attempt):', error);
+        return null;
+      }
+      console.warn(`Error finding first unlearned word, retrying (${retries}/${maxRetries}):`, error);
+      await new Promise(resolve => setTimeout(resolve, 100 * retries));
+    }
+  }
+
+  return null;
 }

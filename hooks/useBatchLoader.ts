@@ -128,7 +128,8 @@ export function useBatchLoader({ startId, endId, batchSize = 20 }: UseBatchLoade
   const addWord = useCallback((word: WordWithProgress) => {
     if (!loadedWordIds.current.has(word.id)) {
       loadedWordIds.current.add(word.id);
-      setWords(prev => [word, ...prev]);
+      // Append to the end so injected words keep sequential ordering
+      setWords(prev => [...prev, word]);
     }
   }, []);
 

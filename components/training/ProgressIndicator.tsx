@@ -38,10 +38,15 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         text: 'text-purple-700 dark:text-purple-300',
         icon: 'add-circle' as const
       };
-      default: return { 
+      case 'training': return { 
         bg: 'bg-green-500', 
         text: 'text-green-700 dark:text-green-300',
-        icon: 'shuffle' as const
+        icon: 'school' as const
+      };
+      default: return { 
+        bg: 'bg-gray-500', 
+        text: 'text-gray-700 dark:text-gray-300',
+        icon: 'help' as const
       };
     }
   };
@@ -52,7 +57,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     switch (mode) {
       case 'review': return `وضع المراجعة ${dueReviewsCount > 0 ? `(${dueReviewsCount})` : ''}`;
       case 'memorization': return 'وضع الحفظ الجديد';
-      default: return 'وضع مختلط';
+      case 'training': return 'تدريب حر';
+      default: return 'وضع التدريب';
     }
   };
 
@@ -77,9 +83,11 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             size={16} 
             color={isDark ? 
               (mode === 'review' ? '#93C5FD' : 
-               mode === 'memorization' ? '#D8B4FE' : '#86EFAC') : 
+               mode === 'memorization' ? '#D8B4FE' : 
+               mode === 'training' ? '#86EFAC' : '#9CA3AF') : 
               (mode === 'review' ? '#1D4ED8' : 
-               mode === 'memorization' ? '#7E22CE' : '#16A34A')
+               mode === 'memorization' ? '#7E22CE' : 
+               mode === 'training' ? '#16A34A' : '#6B7280')
             } 
           />
           <Text className={`text-sm font-medium mr-2 ${modeColors.text}`}>

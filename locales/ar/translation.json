@@ -1,4 +1,10 @@
 {
+    "dateTime": {
+        "never": "لم تتم بعد",
+        "format": "{{date}} في {{time}}",
+        "today": "اليوم في {{time}}",
+        "yesterday": "أمس في {{time}}"
+    },
     "home": {
         "title": "متقن | حفظ القرآن الكريم",
         "loading": "جارِ التحميل...",

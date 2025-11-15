@@ -32,13 +32,15 @@ interface Analytics {
 }
 
 // Memoized Progress Item Component
-const ProgressItem = React.memo(({ 
-  item, 
-  isDark 
-}: { 
-  item: ProgressWithWord; 
+const ProgressItem = React.memo(({
+  item,
+  isDark
+}: {
+  item: ProgressWithWord;
   isDark: boolean;
 }) => {
+  const { t, i18n } = useTranslation();
+
   const getMemoryLevelInfo = useCallback((tier: number) => {
     const levels = [
       { icon: 'help-circle', color: '#EF4444', label: 'مبتدئ', bg: 'bg-red-100 dark:bg-red-900' },
@@ -57,11 +59,26 @@ const ProgressItem = React.memo(({
     return `${Math.round(seconds / 86400)} يوم`;
   }, []);
 
+  // دالة للتاريخ مع الأرقام المعربة
   const formatDate = useCallback((dateString: string) => {
-    if (!dateString) return 'لم تتم بعد';
+    if (!dateString) return t('dateTime.never');
+
     const date = new Date(dateString);
-    return date.toLocaleDateString('ar-SA');
-  }, []);
+    const locale = i18n.language === 'ar' ? 'ar-SA' : 'en-US';
+
+    const timeString = date.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const dateStringFormatted = date.toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    });
+
+    return t('dateTime.format', { date: dateStringFormatted, time: timeString });
+  }, [t, i18n.language]);
 
   const getEaseLevel = useCallback((ease: number) => {
     if (ease < 1.5) return { color: '#EF4444', label: 'صعب' };
@@ -71,7 +88,7 @@ const ProgressItem = React.memo(({
 
   const getSuraName = useCallback((suraId: number) => {
     const suraNames: { [key: number]: string } = {
-      1: "الفاتحة", 2: "البقرة", 3: "آل عمران", 
+      1: "الفاتحة", 2: "البقرة", 3: "آل عمران",
       4: "النساء", 5: "المائدة", 6: "الأنعام",
     };
     return suraNames[suraId] || `سورة ${suraId}`;
@@ -85,16 +102,16 @@ const ProgressItem = React.memo(({
       {/* Header with Word Info */}
       <View className="flex-row justify-between items-start mb-3">
         <View className={`flex-row items-center px-3 py-1 rounded-full ${memoryInfo.bg}`}>
-          <Ionicons 
-            name={memoryInfo.icon as any} 
-            size={16} 
-            color={memoryInfo.color} 
+          <Ionicons
+            name={memoryInfo.icon as any}
+            size={16}
+            color={memoryInfo.color}
           />
           <Text className="text-xs font-semibold mr-2" style={{ color: memoryInfo.color }}>
             {memoryInfo.label}
           </Text>
         </View>
-        
+
         <View className="items-end flex-1 mr-2">
           {item.word && (
             <>
@@ -116,10 +133,10 @@ const ProgressItem = React.memo(({
       <View className="space-y-3">
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons 
-              name="repeat" 
-              size={16} 
-              color="#6B7280" 
+            <Ionicons
+              name="repeat"
+              size={16}
+              color="#6B7280"
             />
             <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
               المراجعات:
@@ -132,10 +149,10 @@ const ProgressItem = React.memo(({
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons 
-              name="speedometer" 
-              size={16} 
-              color="#6B7280" 
+            <Ionicons
+              name="speedometer"
+              size={16}
+              color="#6B7280"
             />
             <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
               مستوى السهولة:
@@ -153,10 +170,10 @@ const ProgressItem = React.memo(({
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons 
-              name="time" 
-              size={16} 
-              color="#6B7280" 
+            <Ionicons
+              name="time"
+              size={16}
+              color="#6B7280"
             />
             <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
               الفترة الحالية:
@@ -169,10 +186,10 @@ const ProgressItem = React.memo(({
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons 
-              name="sad" 
-              size={16} 
-              color="#6B7280" 
+            <Ionicons
+              name="sad"
+              size={16}
+              color="#6B7280"
             />
             <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
               مرات النسيان:
@@ -185,10 +202,10 @@ const ProgressItem = React.memo(({
 
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
-            <Ionicons 
-              name="calendar" 
-              size={16} 
-              color="#6B7280" 
+            <Ionicons
+              name="calendar"
+              size={16}
+              color="#6B7280"
             />
             <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
               المراجعة القادمة:
@@ -202,10 +219,10 @@ const ProgressItem = React.memo(({
         {item.last_successful_date && (
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center">
-              <Ionicons 
-                name="checkmark-circle" 
-                size={16} 
-                color="#10B981" 
+              <Ionicons
+                name="checkmark-circle"
+                size={16}
+                color="#10B981"
               />
               <Text className="text-sm text-gray-600 dark:text-gray-400 mr-2">
                 آخر نجاح:
@@ -222,11 +239,11 @@ const ProgressItem = React.memo(({
 });
 
 // Memoized Header Component
-const ProgressHeader = React.memo(({ 
-  analytics, 
-  isDark 
-}: { 
-  analytics: Analytics; 
+const ProgressHeader = React.memo(({
+  analytics,
+  isDark
+}: {
+  analytics: Analytics;
   isDark: boolean;
 }) => (
   <View className="bg-white dark:bg-gray-800 mx-4 mt-4 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -234,26 +251,26 @@ const ProgressHeader = React.memo(({
       <Text className="text-lg font-bold text-gray-900 dark:text-white">
         ملخص التقدم الكلي
       </Text>
-      <Ionicons 
-        name="stats-chart" 
-        size={24} 
-        color={isDark ? "#818CF8" : "#6366F1"} 
+      <Ionicons
+        name="stats-chart"
+        size={24}
+        color={isDark ? "#818CF8" : "#6366F1"}
       />
     </View>
-    
+
     <View className="flex-row justify-between flex-wrap">
       <View className="items-center w-1/2 mb-3">
         <Text className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
           {analytics.wordsWithProgress}
         </Text>
         <Text className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">
-          كلمات تم تعلمها
+          كلمات قيد التعلم
         </Text>
         <Text className="text-xs text-gray-400 dark:text-gray-500">
           من أصل {analytics.totalWords}
         </Text>
       </View>
-      
+
       <View className="items-center w-1/2 mb-3">
         <Text className="text-2xl font-bold text-green-600 dark:text-green-400">
           {analytics.masteredWords}
@@ -262,7 +279,7 @@ const ProgressHeader = React.memo(({
           كلمات متقنة
         </Text>
       </View>
-      
+
       <View className="items-center w-1/2">
         <View className="flex-row items-center">
           <Ionicons name="repeat" size={16} color="#6B7280" />
@@ -271,7 +288,7 @@ const ProgressHeader = React.memo(({
           </Text>
         </View>
         <Text className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">
-          إجمالي المراجعات
+          إجمالي مراجعات الكلمات
         </Text>
       </View>
 
@@ -297,19 +314,19 @@ const ProgressHeader = React.memo(({
         <View className="flex-row justify-between">
           {Object.entries(analytics.tierStats.tiers).map(([tier, data]: [string, any]) => (
             <View key={tier} className="items-center">
-              <Text className="text-lg font-bold" style={{ 
-                color: tier === '0' ? '#6B7280' : 
-                       tier === '1' ? '#EF4444' : 
-                       tier === '2' ? '#F59E0B' : 
-                       tier === '3' ? '#10B981' : '#8B5CF6' 
+              <Text className="text-lg font-bold" style={{
+                color: tier === '0' ? '#6B7280' :
+                  tier === '1' ? '#EF4444' :
+                    tier === '2' ? '#F59E0B' :
+                      tier === '3' ? '#10B981' : '#8B5CF6'
               }}>
                 {data.count}
               </Text>
               <Text className="text-xs text-gray-500 text-center">
                 {tier === '0' ? 'لم تتعلم' :
-                 tier === '1' ? 'ضعيف' :
-                 tier === '2' ? 'متوسط' :
-                 tier === '3' ? 'جيد' : 'ممتاز'}
+                  tier === '1' ? 'ضعيف' :
+                    tier === '2' ? 'متوسط' :
+                      tier === '3' ? 'جيد' : 'ممتاز'}
               </Text>
             </View>
           ))}
@@ -354,7 +371,7 @@ export default function ReadProgress() {
       const totalWords = tierStats.total;
       const wordsWithProgress = allProgress.length;
       const masteredWords = allProgress.filter(p => p.memory_tier >= 3).length;
-      const averageEase = wordsWithProgress > 0 
+      const averageEase = wordsWithProgress > 0
         ? Math.round(allProgress.reduce((acc, p) => acc + p.ease_factor, 0) / wordsWithProgress * 100) / 100
         : 0;
       const totalReviews = allProgress.reduce((acc, p) => acc + p.review_count, 0);
@@ -407,7 +424,7 @@ export default function ReadProgress() {
 
       // Get word IDs that have progress
       const wordIdsWithProgress = progressData.map(p => p.word_id);
-      
+
       // Fetch word data only for words that have progress
       const wordsData = await fetchWordsByRange(
         Math.min(...wordIdsWithProgress),
@@ -509,10 +526,10 @@ export default function ReadProgress() {
 
       {progressWithWords.length === 0 && !loading ? (
         <View className="flex-1 justify-center items-center">
-          <Ionicons 
-            name="school-outline" 
-            size={64} 
-            color={isDark ? "#6B7280" : "#9CA3AF"} 
+          <Ionicons
+            name="school-outline"
+            size={64}
+            color={isDark ? "#6B7280" : "#9CA3AF"}
           />
           <Text className="text-gray-500 dark:text-gray-400 text-lg mt-4 text-center px-8 font-semibold">
             لم تبدأ التعلم بعد

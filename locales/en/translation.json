@@ -1,4 +1,10 @@
 {
+    "dateTime": {
+        "never": "Never completed",
+        "format": "{{date}} at {{time}}",
+        "today": "Today at {{time}}",
+        "yesterday": "Yesterday at {{time}}"
+    },
     "home": {
         "title": "Mutqen | Quran Memorization",
         "loading": "Loading...",

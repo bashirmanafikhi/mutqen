@@ -1,7 +1,7 @@
 // src/hooks/useTrainingEngine.ts - UPDATED
 import { UserProgress } from '@/models/QuranModels';
 import { TrainingState, TrainingStats } from '@/models/TrainingModels';
-import { WordWithProgress, hasMoreDueReviews } from '@/services/data/TrainingQueryService';
+import { WordWithProgress, fetchWordById, findFirstUnlearnedWord, hasMoreDueReviews } from '@/services/data/TrainingQueryService';
 import { upsertProgressDb } from '@/services/data/userProgressQueries';
 import { getUpdatedProgress } from '@/services/SpacedRepetitionService';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,6 +13,7 @@ interface UseTrainingEngineProps {
   dueReviews: Map<number, string>;
   onLoadMore: () => void;
   hasMoreWords: boolean;
+  onAddWord?: (word: WordWithProgress) => void;
 }
 
 export function useTrainingEngine({
@@ -21,7 +22,8 @@ export function useTrainingEngine({
   words,
   dueReviews,
   onLoadMore,
-  hasMoreWords
+  hasMoreWords,
+  onAddWord
 }: UseTrainingEngineProps) {
   const [state, setState] = useState<TrainingState>({
     mode: 'memorization',
@@ -184,12 +186,15 @@ export function useTrainingEngine({
         accuracy
       }));
 
-      // Add to revealed words and move to next word
-      setState(prev => ({
-        ...prev,
-        revealedWords: [...prev.revealedWords, currentWord],
-        currentWordIndex: prev.currentWordIndex + 1
-      }));
+      // Add to revealed words (avoid duplicates) and move to next word
+      setState(prev => {
+        const alreadyRevealed = prev.revealedWords.some(w => w.id === currentWord.id);
+        return {
+          ...prev,
+          revealedWords: alreadyRevealed ? prev.revealedWords : [...prev.revealedWords, currentWord],
+          currentWordIndex: prev.currentWordIndex + 1
+        };
+      });
 
       // Remove from due reviews if it was there
       if (state.dueReviews.has(currentWord.id)) {
@@ -220,17 +225,139 @@ export function useTrainingEngine({
     }
   }, [state.words]);
 
+  /**
+   * Jump to a review word and show context (previous words) for orientation
+   * This helps the user see where they are in the text
+   */
+    const jumpToReviewWithContext = useCallback(async (wordId: number, contextSize: number = 3) => {
+      let reviewIndex = state.words.findIndex(word => word.id === wordId);
+
+      // If word not in current batch, fetch it
+      if (reviewIndex === -1) {
+        const word = await fetchWordById(wordId);
+        if (word) {
+          // Ask batch loader to add it (if provided)
+          onAddWord?.(word);
+
+          // Update local state but avoid adding duplicates if batch loader already added it
+          setState(prev => {
+            const exists = prev.words.some(w => w.id === word.id);
+            if (exists) {
+              const idx = prev.words.findIndex(w => w.id === word.id);
+              return {
+                ...prev,
+                currentWordIndex: idx,
+                revealedWords: [],
+                mode: 'review'
+              };
+            }
+
+            const newWords = [...prev.words, word];
+            const newIndex = newWords.length - 1;
+            return {
+              ...prev,
+              words: newWords,
+              currentWordIndex: newIndex,
+              revealedWords: [],
+              mode: 'review'
+            };
+          });
+        } else {
+          console.error(`Could not fetch review word ${wordId}`);
+        }
+        return;
+      }
+
+      // Calculate context start - show N words before the review word
+      const contextStart = Math.max(0, reviewIndex - contextSize);
+
+      // Pre-reveal words before the target word for context
+      const contextWords = state.words.slice(contextStart, reviewIndex);
+
+      setState(prev => {
+        // Append only context words that are not already revealed
+        const existingIds = new Set(prev.revealedWords.map(w => w.id));
+        const toAdd = contextWords.filter(w => !existingIds.has(w.id));
+
+        return {
+          ...prev,
+          currentWordIndex: reviewIndex,
+          // Clear previous revealed words and show only the context for the review
+          revealedWords: toAdd.length > 0 ? [...toAdd] : [],
+          mode: 'review'
+        };
+      });
+    }, [state.words, onAddWord]);
+
   const continueMemorization = useCallback(() => {
     setState(prev => ({
       ...prev,
-      mode: 'memorization'
+      mode: 'memorization',
+      revealedWords: []
     }));
   }, []);
+
+  /**
+   * Jump to the latest saved word in memorization mode
+   * Helps users resume from where they left off
+   */
+  const jumpToLatestSaved = useCallback(async (startId: number, endId: number) => {
+    // Find the first word in the currently loaded batch that does NOT have progress
+    const firstUnlearnedIndex = state.words.findIndex(w => (w.memory_tier === undefined || w.memory_tier === 0) && !w.last_review_date);
+
+    if (firstUnlearnedIndex !== -1) {
+      setState(prev => ({
+        ...prev,
+        currentWordIndex: firstUnlearnedIndex,
+        mode: 'memorization',
+        revealedWords: []
+      }));
+      return;
+    }
+
+    // If none found in the current batch, search DB for the next unlearned word in range
+    try {
+      const unlearned = await findFirstUnlearnedWord(startId, endId);
+      if (unlearned) {
+        // Ask batch loader to add if available
+        onAddWord?.(unlearned);
+
+        // Ensure we set currentWordIndex to the injected word
+        setState(prev => {
+          const exists = prev.words.some(w => w.id === unlearned.id);
+          if (exists) {
+            const idx = prev.words.findIndex(w => w.id === unlearned.id);
+            return {
+              ...prev,
+              currentWordIndex: idx,
+              mode: 'memorization',
+              revealedWords: []
+            };
+          }
+
+          const newWords = [...prev.words, unlearned];
+          const newIndex = newWords.length - 1;
+          return {
+            ...prev,
+            words: newWords,
+            currentWordIndex: newIndex,
+            mode: 'memorization',
+            revealedWords: []
+          };
+        });
+      } else {
+        console.info('All words in this batch have progress, not navigating.');
+      }
+    } catch (error) {
+      console.error('Error while searching for unlearned word in DB:', error);
+    }
+  }, [state.words]);
 
   const switchToReviewMode = useCallback(() => {
     setState(prev => ({
       ...prev,
-      mode: 'review'
+      mode: 'review',
+      revealedWords: []
     }));
   }, []);
 
@@ -255,9 +382,11 @@ export function useTrainingEngine({
     // Actions
     updateProgress,
     jumpToReview,
+    jumpToReviewWithContext,
+    jumpToLatestSaved,
     continueMemorization,
     switchToReviewMode,
-    restartSession, // ADD THIS: Now it's available
+    restartSession,
 
     // Status checks
     canContinue: canContinue(),

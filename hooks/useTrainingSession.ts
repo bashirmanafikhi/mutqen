@@ -78,7 +78,8 @@ export function useTrainingSession({
     words: batchLoader.words,
     dueReviews: batchLoader.dueReviews,
     onLoadMore: batchLoader.loadMore,
-    hasMoreWords: batchLoader.hasMore
+     hasMoreWords: batchLoader.hasMore,
+     onAddWord: batchLoader.addWord
   });
 
   // FIX: Add proper dependencies to prevent infinite loop

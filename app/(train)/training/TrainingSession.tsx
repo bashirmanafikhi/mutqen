@@ -42,6 +42,8 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
     // Actions
     updateProgress,
     switchToReviewMode,
+    jumpToReviewWithContext,
+    jumpToLatestSaved,
     restartSession,
 
     // Status
@@ -63,20 +65,38 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
     updateProgress(quality);
   }, [updateProgress]);
 
-  // Update the switchToReviewMode function
+  // Navigate to the first due review word with context
   const handleSwitchToReviewMode = useCallback(() => {
+    const nextReview = reviewDetector.getNextDueReview?.();
+    if (!nextReview) return;
+
     setModeTransition({
       isTransitioning: true,
       fromMode: state.mode,
       toMode: 'review'
     });
 
-    // Show transition for 500ms then switch mode
+    // Show transition for 500ms then navigate to review word
     setTimeout(() => {
-      switchToReviewMode();
+      jumpToReviewWithContext(nextReview.word_id, 3); // Show 3 words before for context
       setModeTransition({ isTransitioning: false });
     }, 500);
-  }, [state.mode, switchToReviewMode]);
+  }, [state.mode, jumpToReviewWithContext, reviewDetector]);
+
+  // Navigate to the latest saved word in memorization mode
+  const handleJumpToLatestSaved = useCallback(() => {
+    // Show transition overlay when switching back to memorization
+    setModeTransition({
+      isTransitioning: true,
+      fromMode: state.mode,
+      toMode: 'memorization'
+    });
+
+    setTimeout(() => {
+      jumpToLatestSaved(startWordId, endWordId);
+      setModeTransition({ isTransitioning: false });
+    }, 500);
+  }, [jumpToLatestSaved, startWordId, endWordId, state.mode]);
 
   const handleWordPress = useCallback((word: WordWithProgress) => {
     // TODO: Implement word details view if needed
@@ -192,11 +212,11 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
             />
             <Text className={`text-lg font-bold mt-4 ${isDark ? 'text-white' : 'text-gray-900'
               }`}>
-              الانتقال إلى وضع المراجعة
+              الانتقال إلى وضع جديد
             </Text>
             <Text className={`text-sm mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'
               }`}>
-              جاري تحميل كلمات المراجعة...
+              جاري تحميل الكلمات...
             </Text>
           </View>
         </View>
@@ -248,6 +268,18 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
                   <Ionicons name="refresh" size={14} color="#FFFFFF" />
                   <Text className="text-white font-semibold text-xs mr-1">
                     {t('training.switch_to_review')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {state.mode === 'review' && (
+                <TouchableOpacity
+                  onPress={handleJumpToLatestSaved}
+                  className="flex-row items-center px-3 py-2 bg-purple-500 rounded-full"
+                >
+                  <Ionicons name="add-circle" size={14} color="#FFFFFF" />
+                  <Text className="text-white font-semibold text-xs mr-1">
+                    عودة للحفظ
                   </Text>
                 </TouchableOpacity>
               )}
