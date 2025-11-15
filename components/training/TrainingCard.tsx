@@ -88,6 +88,7 @@ const TrainingCard: React.FC<CardProps> = ({
 
   const handleRevealPress = () => {
     if (!isRevealed) {
+      // Only set quality based on timer if not already revealed
       const quality = Math.max(1, Math.min(5, localTimer));
       onReveal?.(quality);
     }
@@ -144,51 +145,72 @@ const TrainingCard: React.FC<CardProps> = ({
                 </Text>
                 <View className="flex-row items-center justify-center space-x-4">
                   <Text className="text-sm text-gray-500 dark:text-gray-400">
-                    {word.sura_name} - آية {word.aya_number}
+                    {word.sura_name} - {t('trainingCard.aya', { count: word.aya_number })}
                   </Text>
                   {word.memory_tier !== undefined && word.memory_tier > 0 && (
                     <View className={`px-2 py-1 rounded-full ${
                       isDark ? 'bg-gray-700' : 'bg-gray-200'
                     }`}>
                       <Text className="text-xs text-gray-600 dark:text-gray-300">
-                        المستوى {word.memory_tier}
+                        {t('trainingCard.tier', { count: word.memory_tier })}
                       </Text>
                     </View>
                   )}
                 </View>
               </View>
             ) : (
-              // Hidden State
-              <View className="w-full items-center justify-between" style={{ height: 120 }}>
-                {showQuestionMark ? (
-                  <View className="items-center flex-1 justify-center">
-                    <Text className="text-6xl text-gray-400 dark:text-gray-500 mb-2">
-                      ?
-                    </Text>
-                    <Text className={`text-lg font-semibold text-center ${colors.text}`}>
-                      {t('trainingCard.press_to_reveal')}
-                    </Text>
-                  </View>
-                ) : (
-                  <View className="flex-1 justify-center">
+              // Hidden State with integrated swipe instructions
+              <View className="w-full h-full flex flex-col justify-between items-center">
+                
+                {/* 1. Main Instruction / Word (takes up available space) */}
+                <View className="items-center flex-1 justify-center w-full"> 
+                  {showQuestionMark ? (
+                    <View className="items-center">
+                      <Text className="text-6xl text-gray-400 dark:text-gray-500 mb-2">
+                        ?
+                      </Text>
+                      <Text className={`text-lg font-semibold text-center ${colors.text}`}>
+                        {t('trainingCard.press_to_reveal')}
+                      </Text>
+                    </View>
+                  ) : (
                     <Text className={`text-4xl font-uthmanic text-center ${colors.text}`}>
                       {word.text}
                     </Text>
-                  </View>
-                )}
+                  )}
+                </View>
                 
-                {/* Timer - Properly positioned at bottom */}
-                <View className={`flex-row items-center px-3 py-1 rounded-full ${
-                  isDark ? 'bg-gray-700' : 'bg-gray-200'
-                }`}>
-                  <Ionicons 
-                    name="time-outline" 
-                    size={14} 
-                    color={isDark ? "#9CA3AF" : "#6B7280"} 
-                  />
-                  <Text className="text-sm text-gray-600 dark:text-gray-300 mr-1">
-                    {localTimer} {t('trainingCard.seconds')}
-                  </Text>
+                {/* 2. Swipe Instructions & Timer (Fixed height at bottom) */}
+                <View className="w-full flex-row justify-between mt-8 items-center px-2"> 
+                  {/* Left Swipe (Incorrect) */}
+                  <View className="flex-row items-center">
+                    <Ionicons name="arrow-back-outline" size={20} color="#EF4444" />
+                    <Text className="text-xs text-red-500 dark:text-red-400 font-medium mr-1">
+                      {t('trainingCard.swipe_left_label')}
+                    </Text>
+                  </View>
+
+                  {/* Timer */}
+                  <View className={`flex-row items-center px-3 py-1 rounded-full ${
+                    isDark ? 'bg-gray-700' : 'bg-gray-200'
+                  }`}>
+                    <Ionicons 
+                      name="time-outline" 
+                      size={14} 
+                      color={isDark ? "#9CA3AF" : "#6B7280"} 
+                    />
+                    <Text className="text-sm text-gray-600 dark:text-gray-300 mr-1">
+                      {localTimer} {t('trainingCard.seconds')}
+                    </Text>
+                  </View>
+                  
+                  {/* Right Swipe (Correct) */}
+                  <View className="flex-row items-center">
+                    <Text className="text-xs text-green-500 dark:text-green-400 font-medium ml-1">
+                      {t('trainingCard.swipe_right_label')}
+                    </Text>
+                    <Ionicons name="arrow-forward-outline" size={20} color="#10B981" />
+                  </View>
                 </View>
               </View>
             )}
@@ -196,26 +218,7 @@ const TrainingCard: React.FC<CardProps> = ({
         </Animated.View>
       </PanGestureHandler>
 
-      {/* Swipe Instructions - Only show when not revealed */}
-      {/* {!isRevealed && (
-        <View className="flex-row justify-between w-full max-w-sm mt-4 px-4">
-          <View className="flex-row items-center">
-            <Ionicons name="close-circle" size={20} color="#EF4444" />
-            <Text className="text-xs text-red-500 dark:text-red-400 font-medium mr-1">
-              خطأ
-            </Text>
-          </View>
-          
-          <View className="flex-row items-center">
-            <Text className="text-xs text-green-500 dark:text-green-400 font-medium ml-1">
-              صحيح
-            </Text>
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-          </View>
-        </View>
-      )} */}
-
-      {/* Mode Badge */}
+      {/* Mode Badge - Remains outside for absolute positioning */}
       <View className={`absolute -top-2 px-3 py-1 rounded-full ${
         mode === 'review' 
           ? 'bg-blue-500' 

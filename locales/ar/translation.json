@@ -145,7 +145,11 @@
       "review": "مراجعة",
       "memorization": "حفظ",
       "mixed": "مختلط"
-    }
+    },
+    "swipe_left_label": "خطأ",
+    "swipe_right_label": "صحيح",
+    "aya": "آية {{count}}",
+    "tier": "المستوى {{count}}"
   },
   "language": {
     "ar": "العربية",
@@ -225,5 +229,8 @@
     "rate_app": "قيّم التطبيق",
     "share_app": "مشاركة التطبيق",
     "send_feedback": "أرسل ملاحظاتك"
+  },
+  "trainingPage": {
+    "default_title": "صفحة التدريب"
   }
 }

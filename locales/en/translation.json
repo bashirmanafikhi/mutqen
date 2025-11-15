@@ -16,7 +16,7 @@
   },
   "learningList": {
     "new_saved": "Newly saved",
-    "all_quran": "All Quran Soon",
+    "all_quran": "All Quran",
     "loading_list": "Loading Learnings..."
   },
   "actions": {
@@ -133,8 +133,7 @@
     "session_completed": "session completed!",
     "switch_to_review": "switch to review",
     "revealed_words": "revealed words",
-    "session_summary": "session summary",
-    "view_progress": "show the full progress"
+    "session_summary": "session summary"
   },
   "trainingCard": {
     "press_to_reveal": "Tap to reveal",
@@ -143,7 +142,12 @@
       "review": "Review",
       "memorization": "Memorization",
       "mixed": "Mixed"
-    }
+    },
+    "view_progress": "show the full progress",
+    "swipe_left_label": "Wrong",
+    "swipe_right_label": "Correct",
+    "aya": "Aya {{count}}",
+    "tier": "Tier {{count}}"
   },
   "language": {
     "ar": "Arabic",
@@ -223,5 +227,8 @@
     "rate_app": "Rate the App",
     "share_app": "Share the App",
     "send_feedback": "Send your feedback"
+  },
+  "trainingPage": {
+    "default_title": "Training Page"
   }
 }
