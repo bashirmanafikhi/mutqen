@@ -1,79 +1,109 @@
 {
   "dateTime": {
-    "never": "Never completed",
+    "never": "Never",
     "format": "{{date}} at {{time}}",
     "today": "Today at {{time}}",
     "yesterday": "Yesterday at {{time}}"
   },
   "home": {
-    "title": "Mutqen | Quran Memorization",
+    "title": "Mutqan | Quran Memorization",
     "loading": "Loading...",
-    "empty_title": "You have no saved items yet.",
-    "empty_hint": "Tap the \"+\" button to add a new item!",
+    "empty_title": "You don't have any memorized items yet.",
+    "empty_hint": "Press \"+\" to add a new item!",
     "load_error": "Failed to load data",
     "create_error": "create_error",
-    "delete_error": "Failed to delete"
+    "delete_error": "Error during loading"
   },
   "learningList": {
-    "new_saved": "Newly saved",
-    "all_quran": "All Quran",
-    "loading_list": "Loading Learnings..."
+    "loading_list": "Loading memorization list...",
+    "all_quran": "The entire Holy Quran",
+    "new_saved": "Newly Saved"
   },
   "actions": {
     "read": "Read",
     "train": "Train",
     "progress": "Progress",
-    "delete": "Delete"
+    "delete": "Delete",
+    "cloze": "Blanks",
+    "less": "less"
   },
   "add_new": {
-    "error_fetch_surah": "Failed to fetch surah data.",
-    "error_fetch_page": "Failed to fetch page data.",
-    "custom_soon": "custom selection will be available soon",
-    "cancel": "cancel",
+    "title": "Add New Memorization",
+    "cancel": "Cancel",
     "option": {
-      "custom_soon": "custom selection soon",
-      "juz": "Juz's",
-      "hizb": "Hizbs",
-      "sahaba": "Sahaba Hizbs",
+      "surah": "Surahs",
+      "juz": "Juz' (Parts)",
+      "hizb": "Hizb",
+      "sahaba": "Sahaba Partition",
       "page": "Pages",
-      "surah": "Suras"
+      "custom_soon": "Custom Selection (Coming Soon)"
     },
-    "title": "add new learning\n"
+    "error_fetch_surah": "Failed to fetch Surah data.",
+    "error_fetch_page": "Failed to fetch Page data.",
+    "custom_soon": "Custom selection feature will be available soon"
   },
   "cloze": {
-    "title": "Cloze Trainer",
-    "loading": "Loading trainer...",
-    "no_words": "No words in this range.",
+    "loading": "Loading exercise...",
+    "no_words": "No words found within this range.",
     "back": "Back",
     "mode_mcq": "Multiple Choice",
     "mode_typing": "Typing",
-    "check": "Check",
-    "blank": "Blank {index}",
-    "prev_alert_title": "Start of range",
-    "prev_alert_msg": "You are at the start of the range.",
-    "end_aya_title": "End of ayas",
-    "end_aya_msg": "You reached the end of the range.",
+    "blank": "Blank No. {{index}}",
+    "prev_alert_title": "Start of Range",
+    "prev_alert_msg": "You are at the beginning of the range.",
     "regen": "Regenerate",
     "previous": "Previous",
     "next": "Next",
     "finish": "Finish",
     "result_title": "Result",
     "result_ok": "OK",
-    "placeholder": "Type the word here",
-    "auto": "Auto"
+    "auto": "Auto",
+    "title": "Blanks Exercise",
+    "session_complete": "Session Complete!",
+    "session_complete_message": "You have completed the session!\nAccuracy: {{accuracy}}%\nMax Streak: {{streak}}",
+    "end_aya_title": "End of Ayahs",
+    "end_aya_msg": "You have reached the last Ayah in this range.",
+    "loading_question": "Loading question...",
+    "loading_words": "Loading words...",
+    "aya_info": "Ayah {{aya}} - Surah {{sura}}",
+    "placeholder": "Type the correct word...",
+    "check": "Check",
+    "hint": "Hint",
+    "hint_details": "The word contains {{count}} letters",
+    "hint_details_with_start": "The word contains {{count}} letters and starts with \"{{char}}\"",
+    "time_remaining": "Time Remaining",
+    "seconds_remaining": "{{count}} seconds",
+    "surah_progress": "Surah Progress",
+    "end_session_title": "End Session",
+    "end_session_summary": "Accuracy: {{accuracy}}%\nCurrent Streak: {{streak}}",
+    "mode": {
+      "mcq": "Choice",
+      "typing": "Typing"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "expert": "Expert"
+    },
+    "fallback": {
+      "word": "Word",
+      "term": "Term",
+      "aya": "Ayah"
+    }
   },
   "read": {
-    "title": "Read & Review",
-    "loading": "Loading ayas...",
+    "title": "Recitation and Review",
+    "loading": "Loading Ayahs...",
     "load_more": "Loading more...",
-    "end": "End of reading",
-    "show_tafseer": "Show tafseer ▼",
-    "hide_tafseer": "Hide tafseer ▲",
-    "no_tafseer": "No tafseer for this aya."
+    "end": "End of Reading",
+    "show_tafseer": "Show Tafseer ▼",
+    "hide_tafseer": "Hide Tafseer ▲",
+    "no_tafseer": "No Tafseer available for this Ayah."
   },
   "progress": {
-    "no_data": "No progress data in this range.",
-    "loading_progress": "Loading progress",
+    "no_data": "No progress data available for this range.",
+    "loading_progress": "Loading word progress",
     "mode": {
       "review": "Review ({{count}} due)",
       "memorization": "Memorization",
@@ -84,69 +114,71 @@
     "completion": "Completion",
     "words": "Words",
     "range_info": "Range: {{current}} ({{start}}-{{end}})",
-    "need_review": "Needs review ({{count}})",
+    "need_review": "Needs Review ({{count}})",
     "reviewing": "Reviewing ({{count}})",
     "memorized": "Memorized ({{count}})",
     "due_count": "Due: {{count}}",
-    "remaining": "{{count}} remaining",
-    "not_learned": "Not learned",
+    "remaining": "{{count}} Remaining",
+    "not_learned": "Not Learned",
     "weak": "Weak",
     "fair": "Fair",
     "good": "Good",
     "mastered": "Mastered",
-    "total_words": "Total words"
+    "total_words": "Total Words"
   },
   "training": {
-    "free_training_title": "Free Training",
-    "all_words_complete_message": "All words in this range are complete. Loading words for free training...",
-    "transition_title": "Switching modes",
-    "return_to_memorization": "Return to Memorization",
-    "free_training_badge": "Free",
-    "words_revealed_count": "{{count}} words revealed",
-    "session_end_message": "Session ended",
+    "loading": "Loading training words...",
+    "revealed_title": "Revealed Words ({{count}})",
+    "change_confirm": "Change",
+    "preparing_session": "Preparing session...",
+    "loading_words": "Loading words and preparing review system",
+    "current_card": "Current Card",
+    "revealed_words": "Revealed Words",
+    "switch_to_review": "Switch to Review",
+    "no_more_words": "No more words available",
+    "session_completed": "Session completed successfully!",
+    "session_summary": "Session Summary",
+    "restart_session": "Restart Session",
+    "return_home": "Return Home",
+    "view_progress": "View Full Progress",
     "change": "Change",
-    "current_card": "The current card",
-    "change_confirm": "change",
     "finished": "Finished!",
-    "due_reviews_count": "Due reviews count",
-    "loading_words": "loading words",
-    "memoryLabels": {
-      "0": "not learned",
-      "1": "weak",
-      "2": "normal",
-      "3": "good",
-      "4": "excellent"
-    },
-    "loading": "loading training words",
-    "memory_labels[0]": "not learned",
-    "memory_labels[2]": "normal",
-    "memory_labels[1]": "weak",
-    "memory_labels[4]": "excellent",
-    "memory_labels[3]": "good",
-    "preparing_session": "preparing session...",
-    "no_more_words": "no available words",
-    "restart": "restart",
-    "return_home": "return to main page",
-    "restart_session": "restart session",
+    "restart": "Restart",
     "remaining": "{{count}} words remaining",
-    "revealed_title": "revealed words ({{count}})",
-    "session_completed": "session completed!",
-    "switch_to_review": "switch to review",
-    "revealed_words": "revealed words",
-    "session_summary": "session summary"
+    "memory_labels": [
+      "Not Learned",
+      "Weak",
+      "Fair",
+      "Good",
+      "Mastered"
+    ],
+    "free_training_title": "Free Training",
+    "all_words_complete_message": "All words in this range are complete. Loading words for Free Training...",
+    "transition_title": "Transition to New Mode",
+    "return_to_memorization": "Return to Memorization",
+    "free_training_badge": "Free Training",
+    "session_end_message": "Session End",
+    "words_revealed_count": "{{count}} revealed words",
+    "due_reviews_count": "{{count}} due reviews",
+    "memoryLabels": {
+      "0": "Not Learned",
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Good",
+      "4": "Mastered"
+    }
   },
   "trainingCard": {
-    "press_to_reveal": "Tap to reveal",
+    "press_to_reveal": "Press to Reveal",
     "seconds": "seconds",
     "mode": {
       "review": "Review",
       "memorization": "Memorization",
       "mixed": "Mixed"
     },
-    "view_progress": "show the full progress",
     "swipe_left_label": "Wrong",
     "swipe_right_label": "Correct",
-    "aya": "Aya {{count}}",
+    "aya": "Ayah {{count}}",
     "tier": "Tier {{count}}"
   },
   "language": {
@@ -155,17 +187,17 @@
   },
   "selectSurah": {
     "title": "Select Surah",
-    "loading": "Loading surahs...",
-    "aya_count": "{{count}} ayat"
+    "loading": "Loading Surahs...",
+    "aya_count": "{{count}} Ayahs"
   },
   "selectPage": {
     "title": "Select Page",
-    "loading": "Loading pages...",
+    "loading": "Loading Pages...",
     "page": "Page {{number}}"
   },
   "selectJuz": {
-    "title": "Select Juz",
-    "loading": "Loading juz..."
+    "title": "Select Juz'",
+    "loading": "Loading Juz'..."
   },
   "selectHizb": {
     "title": "Select Hizb",
@@ -173,41 +205,26 @@
     "full": "Full"
   },
   "selectSahaba": {
-    "title": "Select Sahaba Division",
-    "loading": "Loading divisions..."
+    "title": "Select Sahaba Partition",
+    "loading": "Loading Partition..."
   },
   "surahText": {
-    "loading": "Loading surah {{name}}...",
+    "loading": "Loading Surah {{name}}...",
     "no_data": "No text available for {{name}}."
   },
-  "common": {
-    "ok": "OK",
-    "soon": "Coming soon",
-    "error": "Error",
-    "close": "Close",
-    "coming_soon": "Soon"
-  },
-  "performance": {
-    "excellent": "Excellent performance!",
-    "great_job": "Great job!",
-    "very_good": "Very good",
-    "try_again": "Try again"
-  },
-  "stats": {
-    "accuracy": "Accuracy",
-    "words_reviewed": "Words reviewed",
-    "words_memorized": "Words memorized",
-    "current_streak": "Current streak",
-    "completion_rate": "Completion rate"
-  },
-  "navigation": {
-    "progress_report_title": "Progress Report",
-    "home": "Home",
-    "settings": "Settings",
-    "about": "About"
-  },
   "errors": {
-    "load_words": "Failed to fetch words for the range."
+    "load_words": "An error occurred while loading words."
+  },
+  "common": {
+    "soon": "Soon",
+    "close": "Close",
+    "coming_soon": "Coming Soon",
+    "ok": "OK",
+    "error": "Error",
+    "previous": "Previous",
+    "next": "Next",
+    "end": "End",
+    "continue": "Continue"
   },
   "settings": {
     "title": "App Settings",
@@ -215,18 +232,39 @@
     "theme_mode": "Theme Mode",
     "dark_mode": "Dark Mode",
     "font_size": "Font Size",
-    "phone": "Phone",
+    "phone": "Device",
     "light": "Light",
     "dark": "Dark"
   },
+  "performance": {
+    "excellent": "Excellent Performance!",
+    "great_job": "Great Job!",
+    "very_good": "Very Good",
+    "try_again": "Try Again"
+  },
+  "stats": {
+    "accuracy": "Accuracy",
+    "words_reviewed": "Words Reviewed",
+    "words_memorized": "Words Memorized",
+    "current_streak": "Current Streak",
+    "completion_rate": "Completion Rate",
+    "streak": "Streak",
+    "time": "Time"
+  },
+  "navigation": {
+    "progress_report_title": "Progress Report",
+    "home": "Home",
+    "settings": "Settings",
+    "about": "About App"
+  },
   "app": {
-    "name": "Mutqen App",
-    "tagline": "Quran Memorization Helper App"
+    "name": "Mutqan App",
+    "tagline": "A helper app for memorizing the Holy Quran"
   },
   "drawer": {
-    "rate_app": "Rate the App",
-    "share_app": "Share the App",
-    "send_feedback": "Send your feedback"
+    "rate_app": "Rate App",
+    "share_app": "Share App",
+    "send_feedback": "Send Feedback"
   },
   "trainingPage": {
     "default_title": "Training Page"

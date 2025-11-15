@@ -23,7 +23,8 @@
     "read": "قراءة",
     "train": "تدريب",
     "progress": "التقدم",
-    "delete": "حذف"
+    "delete": "حذف",
+    "cloze": "فراغات"
   },
   "add_new": {
     "title": "إضافة حفظ جديد",
@@ -41,26 +42,54 @@
     "custom_soon": "ميزة التحديد المخصص ستكون متاحة قريبًا"
   },
   "cloze": {
-    "title": "تمرين الفراغات",
     "loading": "تحميل التمرين...",
     "no_words": "لا توجد كلمات ضمن هذا النطاق.",
     "back": "عودة",
     "mode_mcq": "اختيار متعدد",
     "mode_typing": "كتابة",
-    "check": "تحقق",
     "blank": "خانة رقم {{index}}",
     "prev_alert_title": "بداية النطاق",
     "prev_alert_msg": "أنت في بداية النطاق.",
-    "end_aya_title": "انتهت الآيات",
-    "end_aya_msg": "لقد وصلت إلى نهاية النطاق.",
     "regen": "إعادة توليد",
     "previous": "السابق",
     "next": "التالي",
     "finish": "انهاء",
     "result_title": "النتيجة",
     "result_ok": "حسناً",
-    "placeholder": "اكتب الكلمة هنا",
-    "auto": "تلقائي"
+    "auto": "تلقائي",
+    "title": "تمرين الإكمال",
+    "session_complete": "اكتملت الجلسة!",
+    "session_complete_message": "لقد أكملت الجلسة!\nالدقة: {{accuracy}}%\nالتسلسل الأقصى: {{streak}}",
+    "end_aya_title": "نهاية الآيات",
+    "end_aya_msg": "لقد وصلت إلى آخر آية في هذا النطاق.",
+    "loading_question": "جاري تحميل السؤال...",
+    "loading_words": "جاري تحميل الكلمات...",
+    "aya_info": "الآية {{aya}} - سورة {{sura}}",
+    "placeholder": "اكتب الكلمة الصحيحة...",
+    "check": "تحقق",
+    "hint": "تلميح",
+    "hint_details": "الكلمة تحتوي على {{count}} حرف",
+    "hint_details_with_start": "الكلمة تحتوي على {{count}} حرف وتبدأ بـ \"{{char}}\"",
+    "time_remaining": "الوقت المتبقي",
+    "seconds_remaining": "{{count}} ثانية",
+    "surah_progress": "تقدم السورة",
+    "end_session_title": "إنهاء الجلسة",
+    "end_session_summary": "الدقة: {{accuracy}}%\nالتسلسل الحالي: {{streak}}",
+    "mode": {
+      "mcq": "اختيار",
+      "typing": "كتابة"
+    },
+    "difficulty": {
+      "easy": "سهل",
+      "medium": "متوسط",
+      "hard": "صعب",
+      "expert": "خبير"
+    },
+    "fallback": {
+      "word": "كلمة",
+      "term": "لفظ",
+      "aya": "آية"
+    }
   },
   "read": {
     "title": "تلاوة ومراجعة",
@@ -183,14 +212,18 @@
     "no_data": "لا يوجد نص متاح لـ {{name}}."
   },
   "errors": {
-    "load_words": "حدث خطأ أثناء جلب كلمات النطاق."
+    "load_words": "حدث خطأ أثناء تحميل الكلمات."
   },
   "common": {
-    "ok": "موافق",
     "soon": "قريبًا",
-    "error": "خطأ",
     "close": "إغلاق",
-    "coming_soon": "قريبًا"
+    "coming_soon": "قريبًا",
+    "ok": "حسناً",
+    "error": "خطأ",
+    "previous": "السابقة",
+    "next": "التالي",
+    "end": "إنهاء",
+    "continue": "استمرار"
   },
   "settings": {
     "title": "إعدادات التطبيق",
@@ -213,7 +246,9 @@
     "words_reviewed": "الكلمات المراجعة",
     "words_memorized": "الكلمات المحفوظة",
     "current_streak": "التسلسل الحالي",
-    "completion_rate": "معدل الإكمال"
+    "completion_rate": "معدل الإكمال",
+    "streak": "التسلسل",
+    "time": "الوقت"
   },
   "navigation": {
     "progress_report_title": "تقرير التقدم",

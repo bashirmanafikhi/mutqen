@@ -1,23 +1,26 @@
 // app/(train)/cloze/[...learningId].tsx
+import TypingInput from '@/components/TypingInput';
+import { useSettings } from '@/context/AppSettingContext';
 import { QuranWord, UserProgress } from "@/models/QuranModels";
 import { upsertProgressDb } from "@/services/data/userProgressQueries";
 import { fetchWordsByRange } from "@/services/data/wordQueries";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useLocalSearchParams } from "expo-router";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // -----------------------------
-// Types
+// Enhanced Types
 // -----------------------------
 type Blank = {
   indexInWords: number;
@@ -26,12 +29,33 @@ type Blank = {
   selectedChoice?: string;
   isCorrect?: boolean;
   choices?: string[];
+  answeredAt?: Date;
+  timeSpent?: number;
+  wordId: number;
 };
 
 type Mode = "mcq" | "typing";
+type Difficulty = "easy" | "medium" | "hard" | "expert";
+
+interface SessionStats {
+  correct: number;
+  incorrect: number;
+  totalAnswered: number;
+  currentStreak: number;
+  maxStreak: number;
+  accuracy: number;
+  totalTimeSpent: number;
+  startTime: Date;
+}
+
+interface AyaGroup {
+  suraId: number;
+  ayaNumber: number;
+  words: QuranWord[];
+}
 
 // -----------------------------
-// Helpers
+// Enhanced Helpers
 // -----------------------------
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
@@ -42,7 +66,11 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-const sample = <T,>(arr: T[], n = 1): T[] => shuffle(arr).slice(0, n);
+const sample = <T,>(arr: T[], n = 1): T[] => {
+  if (arr.length === 0) return [];
+  if (n >= arr.length) return [...arr];
+  return shuffle(arr).slice(0, n);
+};
 
 const normalize = (s?: string) =>
   (s || "")
@@ -50,338 +78,698 @@ const normalize = (s?: string) =>
     .trim()
     .toLowerCase();
 
-// Ensure correct answer is always included in choices
-const buildChoices = (correct: string, pool: string[], optionsCount: number) => {
-  const distractors = sample(pool.filter((w) => normalize(w) !== normalize(correct)), optionsCount - 1);
-  return shuffle([correct, ...distractors]);
-};
 
 // -----------------------------
-// Component
+// Enhanced Component
 // -----------------------------
-export default function ClozeTrainerScreen() {
+export default memo(function EnhancedClozeTrainerScreen() {
   const params = useLocalSearchParams();
-  const router = useRouter();
+  const { isDark } = useSettings();
+  const { t } = useTranslation();
 
   const startWordId = parseInt(params.startWordId as string);
   const endWordId = parseInt(params.endWordId as string);
-  const { t } = useTranslation();
   const title = `${t('cloze.title')} (${params.title})`;
 
+  // State Management
   const [words, setWords] = useState<QuranWord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentAyaWordIndexes, setCurrentAyaWordIndexes] = useState<number[]>([]);
+  const [currentAyaIndex, setCurrentAyaIndex] = useState(0);
+  const [currentBlankIndex, setCurrentBlankIndex] = useState(0);
   const [blanks, setBlanks] = useState<Blank[]>([]);
   const [mode, setMode] = useState<Mode>("mcq");
-  const [difficulty, setDifficulty] = useState<number>(30);
-  const [autoAdvance, setAutoAdvance] = useState<boolean>(true);
-  const [optionsCount, setOptionsCount] = useState<number>(4);
-  const [score, setScore] = useState<{ correct: number; total: number }>({ correct: 0, total: 0 });
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [showHint, setShowHint] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [questionStartTime, setQuestionStartTime] = useState<Date>(new Date());
+  const [typingInput, setTypingInput] = useState("");
+  const [sessionStats, setSessionStats] = useState<SessionStats>({
+    correct: 0,
+    incorrect: 0,
+    totalAnswered: 0,
+    currentStreak: 0,
+    maxStreak: 0,
+    accuracy: 100,
+    totalTimeSpent: 0,
+    startTime: new Date()
+  });
+  const [batchSize] = useState(50);
+  const [currentBatch, setCurrentBatch] = useState(0);
+
+  // Animation values
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(50))[0];
+
+  // Memoized values
+  const uniqueAyas = useMemo(() => {
+    const ayaMap = new Map<string, AyaGroup>();
+    words.forEach(word => {
+      const key = `${word.sura_id}-${word.aya_number}`;
+      if (!ayaMap.has(key)) {
+        ayaMap.set(key, {
+          suraId: word.sura_id,
+          ayaNumber: word.aya_number,
+          words: []
+        });
+      }
+      ayaMap.get(key)!.words.push(word);
+    });
+    return Array.from(ayaMap.values());
+  }, [words]);
+
+  const currentAyaGroup = useMemo(() =>
+    uniqueAyas[currentAyaIndex] || { suraId: 0, ayaNumber: 0, words: [] },
+    [uniqueAyas, currentAyaIndex]
+  );
+
+  const currentAyaWords = currentAyaGroup.words;
+
+  const wordPool = useMemo(() =>
+    Array.from(new Set(words.map(w => w.text))).filter(Boolean),
+    [words]
+  );
+
+  // Difficulty configurations
+  const difficultyConfig = useMemo(() => ({
+    easy: {
+      blankPercentage: 0.2,
+      optionsCount: 3,
+      timeLimit: 0,
+      minBlanks: 1,
+      maxBlanks: 2
+    },
+    medium: {
+      blankPercentage: 0.4,
+      optionsCount: 4,
+      timeLimit: 30,
+      minBlanks: 1,
+      maxBlanks: 3
+    },
+    hard: {
+      blankPercentage: 0.6,
+      optionsCount: 5,
+      timeLimit: 20,
+      minBlanks: 2,
+      maxBlanks: 5
+    },
+    expert: {
+      blankPercentage: 0.8,
+      optionsCount: 6,
+      timeLimit: 15,
+      minBlanks: 3,
+      maxBlanks: 8
+    }
+  }), []);
+
+  // Load words with batching for large ranges
+  const loadWords = useCallback(async (batchNumber: number = 0) => {
+    try {
+      const batchStart = startWordId + (batchNumber * batchSize);
+      const batchEnd = Math.min(batchStart + batchSize - 1, endWordId);
+
+      if (batchStart > endWordId) return;
+
+      const data = await fetchWordsByRange(batchStart, batchEnd);
+      if (data && data.length > 0) {
+        setWords(prev => {
+          const newWords = [...prev, ...data];
+          const uniqueWords = Array.from(new Map(newWords.map(w => [w.id, w])).values());
+          return uniqueWords;
+        });
+      }
+
+      if (batchEnd < endWordId) {
+        setCurrentBatch(batchNumber + 1);
+      }
+    } catch (err) {
+      console.error("Error loading words:", err);
+      Alert.alert(t('common.error'), t('errors.load_words'));
+    } finally {
+      setLoading(false);
+    }
+  }, [startWordId, endWordId, batchSize, t]);
 
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchWordsByRange(startWordId, endWordId);
-        if (!mounted) return;
-        setWords(data || []);
-        if (data && data.length > 0) {
-          const firstAya = data[0].aya_number;
-          const idxs = data.reduce<number[]>((acc, w, idx) => {
-            if (w.aya_number === firstAya) acc.push(idx);
-            return acc;
-          }, []);
-          setCurrentAyaWordIndexes(idxs);
-        }
-      } catch (err) {
-        console.error("Error loading words:", err);
-        Alert.alert(t('common.error'), t('errors.load_words'));
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    return () => { mounted = false; };
-  }, [startWordId, endWordId]);
+    loadWords(0);
+  }, []);
 
-  const wordPool = useMemo(() => Array.from(new Set(words.map((w) => w.text))).filter(Boolean), [words]);
+  // Generate blanks
+  const generateBlanks = useCallback(() => {
+    if (!currentAyaWords.length) return [];
 
-  const buildBlanksForCurrentAya = (forceIndexes?: number[]) => {
-    const ayaWordIdxs = forceIndexes ?? currentAyaWordIndexes;
-    if (!ayaWordIdxs || ayaWordIdxs.length === 0) {
-      setBlanks([]);
-      return;
+    const config = difficultyConfig[difficulty];
+    const targetBlanks = Math.max(
+      config.minBlanks,
+      Math.min(
+        config.maxBlanks,
+        Math.floor(currentAyaWords.length * config.blankPercentage)
+      )
+    );
+
+    const availableIndexes = Array.from({ length: currentAyaWords.length }, (_, i) => i);
+    const blankIndexes = sample(availableIndexes, Math.min(targetBlanks, currentAyaWords.length));
+
+    if (blankIndexes.length === 0) {
+      blankIndexes.push(Math.floor(currentAyaWords.length / 2));
     }
 
-    const maxBlanks = ayaWordIdxs.length;
-    const target = Math.max(1, Math.round((difficulty / 100) * maxBlanks));
-    const chosenIdxs = sample(ayaWordIdxs, Math.min(target, ayaWordIdxs.length));
+    const newBlanks: Blank[] = [];
 
-    const newBlanks: Blank[] = chosenIdxs.map((wordIdx) => {
-      const correct = words[wordIdx].text;
-      const choices = buildChoices(correct, wordPool, optionsCount);
-      return { indexInWords: wordIdx, correctText: correct, choices };
-    });
+    for (const index of blankIndexes) {
+      const word = currentAyaWords[index];
+      if (!word?.text) continue;
 
-    setScore({ correct: 0, total: newBlanks.length });
-    setBlanks(newBlanks);
-  };
+      const otherWords = wordPool.filter(w =>
+        w && normalize(w) !== normalize(word.text)
+      );
 
-  useEffect(() => { if (currentAyaWordIndexes.length > 0) buildBlanksForCurrentAya(); }, [currentAyaWordIndexes, difficulty, words, optionsCount]);
+      const availableDistractors = Math.min(otherWords.length, config.optionsCount - 1);
+      if (availableDistractors < 1) continue;
 
-  const goToNextAya = () => {
-    if (!words.length) return;
-    const currentAyaNum = words[currentAyaWordIndexes[0]].aya_number;
-    const remaining = words.filter((w) => w.aya_number > currentAyaNum);
-    if (!remaining.length) return Alert.alert(t('cloze.end_aya_title'), t('cloze.end_aya_msg'));
-    const nextAyaNum = remaining[0].aya_number;
-    const nextIdxs = words.reduce<number[]>((acc, w, idx) => {
-      if (w.aya_number === nextAyaNum) acc.push(idx);
-      return acc;
-    }, []);
-    setCurrentAyaWordIndexes(nextIdxs);
-    setBlanks([]);
-  };
+      const distractors = sample(otherWords, availableDistractors).filter(Boolean);
+      const choices = shuffle([word.text, ...distractors]);
 
-  const handleAnswer = async (blankIdx: number, answer: string) => {
-    setBlanks((prev) => prev.map((b, i) => i === blankIdx ? { ...b, userAnswer: answer, selectedChoice: answer } : b));
+      if (!choices.some(choice => normalize(choice) === normalize(word.text))) {
+        continue;
+      }
 
-    const theBlank = blanks[blankIdx];
-    const isCorrect = normalize(answer) === normalize(theBlank.correctText);
+      newBlanks.push({
+        indexInWords: index,
+        correctText: word.text,
+        choices,
+        answeredAt: undefined,
+        timeSpent: 0,
+        isCorrect: undefined,
+        wordId: word.id
+      });
+    }
 
-    setBlanks((prev) => prev.map((b, i) => i === blankIdx ? { ...b, isCorrect } : b));
-    setScore((s) => ({ correct: s.correct + (isCorrect ? 1 : 0), total: s.total }));
+    if (newBlanks.length === 0 && currentAyaWords.length > 0) {
+      const fallbackIndex = Math.floor(currentAyaWords.length / 2);
+      const fallbackWord = currentAyaWords[fallbackIndex];
 
+      if (fallbackWord?.text) {
+        const simpleChoices = [
+          fallbackWord.text,
+          t('cloze.fallback.word'),
+          t('cloze.fallback.term'),
+          t('cloze.fallback.aya')
+        ].filter(Boolean);
+
+        newBlanks.push({
+          indexInWords: fallbackIndex,
+          correctText: fallbackWord.text,
+          choices: shuffle(simpleChoices),
+          answeredAt: undefined,
+          timeSpent: 0,
+          isCorrect: undefined,
+          wordId: fallbackWord.id
+        });
+      }
+    }
+
+    return newBlanks.sort((a, b) => a.indexInWords - b.indexInWords);
+  }, [currentAyaWords, difficulty, wordPool, difficultyConfig, t]);
+
+  // Initialize blanks when aya changes
+  useEffect(() => {
+    if (currentAyaWords.length > 0) {
+      const newBlanks = generateBlanks();
+
+      if (newBlanks.length > 0) {
+        setBlanks(newBlanks);
+        setCurrentBlankIndex(0);
+        setShowHint(false);
+        setTimer(0);
+        setTypingInput("");
+        setQuestionStartTime(new Date());
+
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          })
+        ]).start();
+      } else {
+        goToNextAya();
+      }
+    }
+  }, [currentAyaWords, difficulty]); // `goToNextAya` is not needed here
+
+  // Timer effect
+  useEffect(() => {
+    const config = difficultyConfig[difficulty];
+    if (config.timeLimit > 0 && blanks.length > 0 && currentBlankIndex < blanks.length) {
+      const currentBlank = blanks[currentBlankIndex];
+      if (!currentBlank?.isCorrect) {
+        const interval = setInterval(() => {
+          setTimer(prev => {
+            if (prev >= config.timeLimit) {
+              handleAnswer("");
+              return 0;
+            }
+            return prev + 1;
+          });
+        }, 1000);
+
+        return () => clearInterval(interval);
+      }
+    }
+  }, [difficulty, blanks, currentBlankIndex]); // `handleAnswer` is not needed
+
+  // Progress saving
+  const saveProgress = useCallback(async (wordId: number, isCorrect: boolean) => {
     try {
-      const wordId = words[theBlank.indexInWords]?.id;
-      if (wordId) {
-        const progress: UserProgress = {
-          created_at: new Date().toISOString(),
-          word_id: wordId,
-          current_interval: isCorrect ? 1 : 0,
-          review_count: isCorrect ? 1 : 1,
-          ease_factor: isCorrect ? 2.5 : 1.3,
-          next_review_date: new Date().toISOString(),
-          last_review_date: new Date().toISOString(),
-          last_successful_date: null,
-          memory_tier: 0,
-          lapses: 0,
-          notes: null
-        };
-        upsertProgressDb(progress).catch(() => {});
-      }
-    } catch {}
-
-    if (autoAdvance && isCorrect) {
-      const remainingUn = blanks.filter((b) => !b.isCorrect);
-      if (!remainingUn.length) setTimeout(goToNextAya, 600);
+      const progress: UserProgress = {
+        created_at: new Date().toISOString(),
+        word_id: wordId,
+        current_interval: isCorrect ? 1 : 0,
+        review_count: 1,
+        ease_factor: isCorrect ? 2.5 : 1.3,
+        next_review_date: new Date().toISOString(),
+        last_review_date: new Date().toISOString(),
+        last_successful_date: isCorrect ? new Date().toISOString() : null,
+        memory_tier: isCorrect ? 1 : 0,
+        lapses: isCorrect ? 0 : 1,
+        notes: null
+      };
+      await upsertProgressDb(progress);
+    } catch (error) {
+      console.error('Error saving progress:', error);
     }
-  };
+  }, []);
 
-  const renderAyaWithBlanks = () => {
-    if (!words.length) return null;
-    const fragment: (string | { blankIndex: number; placeholder: string })[] = [];
-    const idxToBlankIndex: Record<number, number> = {};
-    blanks.forEach((b, i) => (idxToBlankIndex[b.indexInWords] = i));
+  // Handle answer submission
+  const handleAnswer = useCallback(async (answer: string) => {
+    if (blanks.length === 0 || currentBlankIndex >= blanks.length) return;
 
-    currentAyaWordIndexes.forEach((wIdx) => {
-      const w = words[wIdx];
-      const blankIdx = idxToBlankIndex[wIdx];
-      fragment.push(blankIdx !== undefined ? { blankIndex: blankIdx, placeholder: "____" } : w.text);
+    const currentBlank = blanks[currentBlankIndex];
+    if (!currentBlank) return;
+
+    const timeSpent = Math.floor((new Date().getTime() - questionStartTime.getTime()) / 1000);
+    const isCorrect = normalize(answer) === normalize(currentBlank.correctText);
+
+    const updatedBlanks = blanks.map((blank, index) =>
+      index === currentBlankIndex
+        ? { ...blank, userAnswer: answer, isCorrect, answeredAt: new Date(), timeSpent }
+        : blank
+    );
+    setBlanks(updatedBlanks);
+
+    setSessionStats(prev => {
+      const newCorrect = prev.correct + (isCorrect ? 1 : 0);
+      const newIncorrect = prev.incorrect + (isCorrect ? 0 : 1);
+      const newStreak = isCorrect ? prev.currentStreak + 1 : 0;
+      const totalAnswered = newCorrect + newIncorrect;
+      const newAccuracy = totalAnswered > 0 ? Math.round((newCorrect / totalAnswered) * 100) : 100;
+
+      return {
+        correct: newCorrect,
+        incorrect: newIncorrect,
+        totalAnswered,
+        currentStreak: newStreak,
+        maxStreak: Math.max(prev.maxStreak, newStreak),
+        accuracy: newAccuracy,
+        totalTimeSpent: prev.totalTimeSpent + timeSpent,
+        startTime: prev.startTime
+      };
     });
+
+    if (currentBlank.wordId) {
+      await saveProgress(currentBlank.wordId, isCorrect);
+    }
+
+    if (autoAdvance) {
+      setTimeout(() => {
+        if (currentBlankIndex < blanks.length - 1) {
+          setCurrentBlankIndex(prev => prev + 1);
+          setQuestionStartTime(new Date());
+          setTimer(0);
+          setShowHint(false);
+          setTypingInput("");
+        } else if (currentAyaIndex < uniqueAyas.length - 1) {
+          goToNextAya();
+        } else {
+          // Alert needs sessionStats to be up-to-date, but state updates are async
+          // We can read from the latest state closure
+          setSessionStats(latestStats => {
+            Alert.alert(
+              t('cloze.session_complete'),
+              t('cloze.session_complete_message', {
+                accuracy: latestStats.accuracy,
+                streak: latestStats.maxStreak
+              }),
+              [{ text: t('common.ok') }]
+            );
+            return latestStats;
+          });
+        }
+      }, 1000);
+    }
+  }, [blanks, currentBlankIndex, currentAyaIndex, uniqueAyas.length, autoAdvance, questionStartTime, saveProgress, t]);
+
+  // Navigation
+  const goToNextAya = useCallback(() => {
+    if (currentAyaIndex < uniqueAyas.length - 1) {
+      setCurrentAyaIndex(prev => prev + 1);
+      if (currentAyaIndex >= uniqueAyas.length - 5 && currentBatch * batchSize < (endWordId - startWordId)) {
+        loadWords(currentBatch);
+      }
+    } else {
+      Alert.alert(t('cloze.end_aya_title'), t('cloze.end_aya_msg'));
+    }
+  }, [currentAyaIndex, uniqueAyas.length, currentBatch, loadWords, batchSize, startWordId, endWordId, t]);
+
+  const goToPreviousAya = useCallback(() => {
+    if (currentAyaIndex > 0) {
+      setCurrentAyaIndex(prev => prev - 1);
+    }
+  }, [currentAyaIndex]);
+
+  // Render functions
+  const renderAyaWithCurrentBlank = () => {
+    if (!currentAyaWords.length || blanks.length === 0 || currentBlankIndex >= blanks.length) {
+      return (
+        <View className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <Text className="text-center text-gray-600 dark:text-gray-400">
+            {t('cloze.loading_question')}
+          </Text>
+        </View>
+      );
+    }
+
+    const currentBlank = blanks[currentBlankIndex];
 
     return (
-      <View className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow-sm">
-        <Text className="text-right text-2xl font-uthmanic leading-loose text-gray-900 dark:text-gray-100">
-          {fragment.map((part, idx) =>
-            typeof part === "string" ? (
-              <Text key={idx} style={{ writingDirection: "rtl" }}>{part + " "}</Text>
-            ) : (
-              <Text key={idx} className="text-center px-2" style={{ textDecorationLine: "underline", writingDirection: "rtl" }}>{part.placeholder + " "}</Text>
-            )
-          )}
+      <Animated.View
+        style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+        className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700"
+      >
+        <Text className="text-right text-2xl font-uthmanic leading-loose text-gray-900 dark:text-gray-100 mb-4">
+          {currentAyaWords.map((word, index) => {
+            const blankForThisPosition = blanks.find(blank => blank.indexInWords === index);
+
+            if (blankForThisPosition) {
+              if (blankForThisPosition === currentBlank) {
+                const dotCount = Math.min(blankForThisPosition.correctText.length, 6);
+                return (
+                  <Text key={index} className="bg-yellow-100 dark:bg-yellow-900 px-2 py-1 rounded-lg border-2 border-yellow-400 mx-1">
+                    {".".repeat(dotCount)}{" "}
+                  </Text>
+                );
+              } else if (blankForThisPosition.isCorrect !== undefined) {
+                const isCorrect = blankForThisPosition.isCorrect;
+                
+                return (
+                  <Text
+                    key={index}
+                    className={`px-2 py-1 rounded-lg mx-1 border-2 ${isCorrect
+                      ? "bg-emerald-100 dark:bg-emerald-900 border-emerald-400 text-emerald-800 dark:text-emerald-200"
+                      : "bg-red-100 dark:bg-red-900 border-red-400 text-red-800 dark:text-red-200" // Red for wrong answers
+                      }`}
+                  >
+                    {blankForThisPosition.correctText}{" "}
+                  </Text>
+                );
+              } else {
+                const dotCount = Math.min(blankForThisPosition.correctText.length, 6);
+                return (
+                  <Text key={index} className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-400 mx-1">
+                    {".".repeat(dotCount)}{" "}
+                  </Text>
+                );
+              }
+            } else {
+              return <Text key={index}>{word.text}{" "}</Text>;
+            }
+          })}
         </Text>
+
+        <View className="flex-row justify-between items-center border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Text className="text-sm text-gray-600 dark:text-gray-400">
+            {t('cloze.aya_info', { aya: currentAyaGroup.ayaNumber, sura: currentAyaGroup.suraId })}
+          </Text>
+          <Text className="text-sm text-gray-600 dark:text-gray-400">
+            {currentBlankIndex + 1} / {blanks.length}
+          </Text>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderMCQOptions = () => {
+    if (blanks.length === 0 || currentBlankIndex >= blanks.length) return null;
+
+    const currentBlank = blanks[currentBlankIndex];
+    if (!currentBlank?.choices) return null;
+
+    return (
+      <View className="flex-row flex-wrap justify-center mt-6 gap-3">
+        {currentBlank.choices.map((choice, index) => {
+          const isSelected = currentBlank.selectedChoice === choice;
+          const isCorrect = currentBlank.isCorrect !== undefined && normalize(choice) === normalize(currentBlank.correctText);
+          const isIncorrect = currentBlank.isCorrect === false && isSelected;
+
+          let bgColor = "bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600";
+          if (isSelected) {
+            bgColor = isCorrect ? "bg-emerald-500 border-emerald-600" : "bg-red-500 border-red-600";
+          } else if (currentBlank.isCorrect !== undefined && isCorrect) {
+            bgColor = "bg-emerald-500 border-emerald-600";
+          }
+
+          return (
+            <TouchableOpacity
+              key={index}
+              className={`px-6 py-4 rounded-xl ${bgColor} min-w-[100px]`}
+              onPress={() => !currentBlank.isCorrect && handleAnswer(choice)}
+              disabled={currentBlank.isCorrect !== undefined}
+            >
+              <Text className={`text-lg font-uthmanic text-center ${isSelected || (currentBlank.isCorrect !== undefined && isCorrect)
+                ? "text-white"
+                : "text-gray-800 dark:text-gray-200"
+                }`}>
+                {choice}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
   };
 
-  const renderChoicesForBlank = (b: Blank, blankIdx: number) => (
-    <View className="flex-row flex-wrap mt-3">
-      {b.choices?.map((c, i) => {
-        const chosen = b.selectedChoice === c;
-        const correct = normalize(c) === normalize(b.correctText);
-        const bg = b.isCorrect != null ? (correct ? "bg-emerald-500" : chosen ? "bg-red-500" : "bg-gray-200 dark:bg-gray-800") : chosen ? "bg-indigo-500" : "bg-gray-100 dark:bg-gray-800";
-        return (
-          <TouchableOpacity
-            key={i}
-            className={`px-3 py-2 rounded-lg m-1 ${bg}`}
-            onPress={() => !b.isCorrect && handleAnswer(blankIdx, c)}
-          >
-            <Text className="text-sm font-semibold text-center text-gray-800 dark:text-gray-200">{c}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
+  const renderTypingInput = () => {
+    return (
+      <View className="mt-6" >
+        <TypingInput
+          blanks={blanks}
+          currentBlankIndex={currentBlankIndex}
+          typingInput={typingInput}
+          setTypingInput={setTypingInput}
+          showHint={showHint}
+          setShowHint={setShowHint}
+          handleAnswer={handleAnswer}
+          t={t}
+        />
+      </View>
+    );
+  };
 
-  const renderTypingForBlank = (b: Blank, blankIdx: number) => (
-    <View className="mt-3">
-      <TextInput
-        placeholder={t('cloze.placeholder')}
-        className="border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-right"
-        onSubmitEditing={(ev) => ev.nativeEvent.text && handleAnswer(blankIdx, ev.nativeEvent.text)}
-        defaultValue={b.userAnswer}
-        returnKeyType="done"
-      />
-      <View className="flex-row mt-2">
-        <TouchableOpacity
-          className="bg-indigo-500 px-3 py-2 rounded-lg"
-          onPress={() => b.userAnswer && handleAnswer(blankIdx, b.userAnswer)}
-        >
-          <Text className="text-white font-bold">{t('cloze.check')}</Text>
-        </TouchableOpacity>
+  const renderStats = () => (
+    <View className="flex-row justify-between items-center bg-gray-50 dark:bg-gray-800 p-3 rounded-xl mb-4">
+      <View className="items-center">
+        <Text className="text-sm text-gray-600 dark:text-gray-400">{t('stats.accuracy')}</Text>
+        <Text className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+          {sessionStats.accuracy}%
+        </Text>
+      </View>
+
+      <View className="items-center">
+        <Text className="text-sm text-gray-600 dark:text-gray-400">{t('stats.streak')}</Text>
+        <View className="flex-row items-center">
+          <Ionicons
+            name="flame"
+            size={16}
+            color={sessionStats.currentStreak > 3 ? "#F59E0B" : "#6B7280"}
+          />
+          <Text className="text-lg font-bold text-amber-600 dark:text-amber-400 mr-1">
+            {sessionStats.currentStreak}
+          </Text>
+        </View>
+      </View>
+
+      <View className="items-center">
+        <Text className="text-sm text-gray-600 dark:text-gray-400">{t('stats.time')}</Text>
+        <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">
+          {Math.floor(sessionStats.totalTimeSpent / 60)}:{(sessionStats.totalTimeSpent % 60).toString().padStart(2, '0')}
+        </Text>
       </View>
     </View>
   );
 
-  // Total progress
-  const totalBlanks = words.length ? words.length : 1;
-  const answeredBlanks = blanks.filter((b) => b.isCorrect).length;
-  const progressPercent = Math.round((answeredBlanks / totalBlanks) * 100);
-
-  if (loading) return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black justify-center items-center">
-      <ActivityIndicator size="large" />
-      <Text className="mt-2 text-gray-600 dark:text-gray-300">{t('cloze.loading')}</Text>
-    </SafeAreaView>
-  );
-
-  if (!words.length) return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black justify-center items-center p-6">
-      <Text className="text-center text-lg text-red-600">{t('cloze.no_words')}</Text>
-      <TouchableOpacity className="mt-4 bg-indigo-500 px-4 py-2 rounded-lg" onPress={() => router.back()}>
-        <Text className="text-white font-bold">{t('cloze.back')}</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
+  // Loading state
+  if (loading && words.length === 0) {
+    return (
+      <SafeAreaView className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gray-50'} justify-center items-center`}>
+        <ActivityIndicator size="large" color="#6366F1" />
+        <Text className="mt-4 text-gray-600 dark:text-gray-300 text-lg">{t('cloze.loading_words')}</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black p-4">
-      <Stack.Screen options={{ title: title }} />
-      {/* Header */}
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">{title}</Text>
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Stack.Screen options={{
+        title: title,
+        headerStyle: {
+          backgroundColor: isDark ? '#111827' : '#FFFFFF',
+        },
+        headerTintColor: isDark ? '#FFFFFF' : '#000000',
+      }} />
 
-        <View className="flex-row items-center space-x-2">
-          <TouchableOpacity className={`px-3 py-1 rounded-lg ${mode === "mcq" ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`} onPress={() => setMode("mcq")}>
-            <Text className={`${mode === "mcq" ? "text-white" : "text-black dark:text-gray-200"}`}>{t('cloze.mode_mcq')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className={`px-3 py-1 rounded-lg ${mode === "typing" ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`} onPress={() => setMode("typing") }>
-            <Text className={`${mode === "typing" ? "text-white" : "text-black dark:text-gray-200"}`}>{t('cloze.mode_typing')}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <View className="flex-1 p-4">
+        {renderStats()}
 
-      {/* Difficulty & Options Count & Progress */}
-      <View className="mb-4">
-        <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-sm text-gray-700 dark:text-gray-300">مستوى الصعوبة: {difficulty}%</Text>
-          <Text className="text-sm text-gray-700 dark:text-gray-300">التقدم الكلي: {progressPercent}%</Text>
-        </View>
-
-        <View className="flex-row items-center space-x-2 mb-2">
-          <TouchableOpacity
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-800 rounded-lg"
-            onPress={() => setDifficulty((d) => Math.max(10, d - 10))}
-          >
-            <Text>-</Text>
-          </TouchableOpacity>
-          <View className="flex-1 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
-            <Text className="text-center text-sm text-gray-600 dark:text-gray-300">{difficulty}%</Text>
-          </View>
-          <TouchableOpacity
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-800 rounded-lg"
-            onPress={() => setDifficulty((d) => Math.min(100, d + 10))}
-          >
-            <Text>+</Text>
-          </TouchableOpacity>
-
-          {/* Options count selector */}
-          <View className="flex-row items-center space-x-1">
-            {[4, 5, 6].map((num) => (
+        {/* Mode and Difficulty Selector */}
+        <View className="flex-row justify-between items-center mb-6">
+          <View className="flex-row bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            {(["mcq", "typing"] as Mode[]).map((m) => (
               <TouchableOpacity
-                key={num}
-                className={`px-3 py-1 rounded-lg ${optionsCount === num ? "bg-indigo-500" : "bg-gray-200 dark:bg-gray-800"}`}
-                onPress={() => setOptionsCount(num)}
+                key={m}
+                disabled={m === "typing"}
+                className={`px-4 py-2 rounded-lg ${mode === m ? "bg-white dark:bg-gray-700 shadow-sm" : ""}`}
+                onPress={() => {
+                  setMode(m);
+                  setTypingInput("");
+                }}
               >
-                <Text className={`${optionsCount === num ? "text-white" : "text-black dark:text-gray-200"}`}>{num}</Text>
+                <Text className={`font-medium ${mode === m ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400"}`}>
+                  {t(`cloze.mode.${m}`)}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          <TouchableOpacity
-            className={`px-3 py-1 rounded-lg ${autoAdvance ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-800"}`}
-            onPress={() => setAutoAdvance((s) => !s)}
-          >
-            <Text className={`${autoAdvance ? "text-white" : "text-black dark:text-gray-200"}`}>Auto</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Aya display */}
-      <View className="mb-4">{renderAyaWithBlanks()}</View>
-
-      {/* Blanks UI */}
-      <ScrollView className="mb-6">
-        {blanks.map((b, i) => (
-          <View key={i} className="mb-3">
-            <Text className="text-right text-sm text-gray-600 dark:text-gray-300 mb-1">
-              {t('cloze.blank', { index: i + 1 })}
-            </Text>
-            {mode === "mcq" ? renderChoicesForBlank(b, i) : renderTypingForBlank(b, i)}
+          <View className="flex-row bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            {(["easy", "medium", "hard", "expert"] as Difficulty[]).map((diff) => (
+              <TouchableOpacity
+                key={diff}
+                className={`px-3 py-2 rounded-lg ${difficulty === diff ?
+                  diff === "easy" ? "bg-emerald-500" :
+                    diff === "medium" ? "bg-blue-500" :
+                      diff === "hard" ? "bg-orange-500" : "bg-red-500"
+                  : ""}`}
+                onPress={() => {
+                  setDifficulty(diff);
+                  setTypingInput("");
+                }}
+              >
+                <Text className={`text-xs font-medium ${difficulty === diff ? "text-white" : "text-gray-600 dark:text-gray-400"}`}>
+                  {t(`cloze.difficulty.${diff}`)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        ))}
-      </ScrollView>
-
-      {/* Footer controls */}
-      <View className="flex-row justify-between items-center">
-        <View className="flex-row space-x-2">
-          <TouchableOpacity className="bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded-lg" onPress={() => {
-            if (currentAyaWordIndexes.length && words.length) {
-              const currentAyaNum = words[currentAyaWordIndexes[0]].aya_number;
-              const previous = words.filter((w) => w.aya_number < currentAyaNum);
-              if (!previous.length) return Alert.alert(t('cloze.prev_alert_title'), t('cloze.prev_alert_msg'));
-              const prevAyaNum = previous[previous.length - 1].aya_number;
-              const prevIdxs = words.reduce<number[]>((acc, w, idx) => {
-                if (w.aya_number === prevAyaNum) acc.push(idx);
-                return acc;
-              }, []);
-              setCurrentAyaWordIndexes(prevIdxs);
-              setBlanks([]);
-            }
-          }}>
-            <Text>{t('cloze.previous')}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="bg-gray-200 dark:bg-gray-800 px-3 py-2 rounded-lg" onPress={() => buildBlanksForCurrentAya()}>
-            <Text>إعادة توليد</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="bg-indigo-500 px-3 py-2 rounded-lg" onPress={goToNextAya}>
-            <Text className="text-white">التالي</Text>
-          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          className="bg-red-500 px-3 py-2 rounded-lg"
-          onPress={() => Alert.alert("النتيجة", `صحيح: ${score.correct} من ${score.total}`, [
-            { text: "حسناً", onPress: () => router.back() },
-          ])}
-        >
-          <Text className="text-white">انهاء</Text>
-        </TouchableOpacity>
+        {/* Timer */}
+        {difficultyConfig[difficulty].timeLimit > 0 && (
+          <View className="mb-4">
+            <View className="flex-row justify-between items-center mb-1">
+              <Text className="text-sm text-gray-600 dark:text-gray-400">{t('cloze.time_remaining')}</Text>
+              <Text className="text-sm font-bold text-amber-600">
+                {t('cloze.seconds_remaining', { count: difficultyConfig[difficulty].timeLimit - timer })}
+              </Text>
+            </View>
+            <View className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+              <View
+                className="h-2 bg-amber-500 rounded-full"
+                style={{
+                  width: `${((difficultyConfig[difficulty].timeLimit - timer) / difficultyConfig[difficulty].timeLimit) * 100}%`
+                }}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Main Content */}
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {renderAyaWithCurrentBlank()}
+
+          <View className="mt-6">
+            {mode === "mcq" ? renderMCQOptions() : renderTypingInput()}
+          </View>
+
+          {/* Progress */}
+          <View className="mt-8">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-sm text-gray-600 dark:text-gray-400">{t('cloze.surah_progress')}</Text>
+              <Text className="text-sm text-gray-600 dark:text-gray-400">
+                {currentAyaIndex + 1} / {uniqueAyas.length}
+              </Text>
+            </View>
+            <View className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+              <View
+                className="h-2 bg-indigo-500 rounded-full"
+                style={{ width: `${((currentAyaIndex + 1) / uniqueAyas.length) * 100}%` }}
+              />
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Footer Controls */}
+        <View className="flex-row justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+          <View className="flex-row space-x-2">
+            <TouchableOpacity
+              className="bg-gray-200 dark:bg-gray-700 px-4 py-3 rounded-xl flex-row items-center"
+              onPress={goToPreviousAya}
+              disabled={currentAyaIndex === 0}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={20}
+                color={currentAyaIndex === 0 ? "#9CA3AF" : (isDark ? "#D1D5DB" : "#4B5563")}
+              />
+              <Text className={`mr-1 ${currentAyaIndex === 0 ? "text-gray-400" : "text-gray-700 dark:text-gray-300"}`}>
+                {t('common.previous')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="bg-indigo-500 px-4 py-3 rounded-xl flex-row items-center"
+              onPress={goToNextAya}
+            >
+              <Text className="text-white font-bold mr-1">{t('common.next')}</Text>
+              <Ionicons name="chevron-forward" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            className="bg-red-500 px-4 py-3 rounded-xl flex-row items-center"
+            onPress={() => {
+              Alert.alert(
+                t('cloze.end_session_title'),
+                t('cloze.end_session_summary', {
+                  accuracy: sessionStats.accuracy,
+                  streak: sessionStats.currentStreak
+                }),
+                [
+                  { text: t('common.continue'), style: "cancel" }
+                ]
+              );
+            }}
+          >
+            <Ionicons name="flag" size={20} color="white" />
+            <Text className="text-white font-bold mr-1">{t('common.end')}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
-}
+});
