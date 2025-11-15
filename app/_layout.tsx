@@ -5,7 +5,7 @@ import { Slot, SplashScreen } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler'; // ADD THIS IMPORT
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppSettingsProvider, useSettings } from '../context/AppSettingContext';
 import '../services/i18n';
@@ -58,7 +58,7 @@ export default function RootLayout() {
       } catch (error: any) {
         setFontError(error?.message || 'خط غير معروف');
       } finally {
-      SplashScreen.hideAsync();
+        SplashScreen.hideAsync();
       }
     }
     loadFonts();
@@ -83,16 +83,16 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AppSettingsProvider>
-        <ThemeWrapper>
-          <SafeAreaProvider>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AppSettingsProvider>
+          <ThemeWrapper>
             <BottomSafeAreaWrapper>
-              <Slot />
+            <Slot />
             </BottomSafeAreaWrapper>
-          </SafeAreaProvider>
-        </ThemeWrapper>
-      </AppSettingsProvider>
-    </GestureHandlerRootView>
+          </ThemeWrapper>
+        </AppSettingsProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

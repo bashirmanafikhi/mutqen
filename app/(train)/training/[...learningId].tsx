@@ -1,6 +1,7 @@
 // app/(train)/training/[...learningId].tsx
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TrainingSession from './TrainingSession';
 
 export default function TrainingPage() {
@@ -11,12 +12,14 @@ export default function TrainingPage() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown:false, statusBarHidden:true }} />
-      <TrainingSession 
-        startWordId={startWordId}
-        endWordId={endWordId}
-        title={title}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <TrainingSession
+          startWordId={startWordId}
+          endWordId={endWordId}
+          title={title}
+        />
+      </SafeAreaView>
     </>
   );
 }

@@ -42,50 +42,63 @@ export async function fetchWordsWithProgressBatch(
   limit: number = 50,
   offset: number = 0
 ): Promise<WordWithProgress[]> {
-  const db = await getDrizzleDb();
+  let retries = 0;
+  const maxRetries = 2;
   
-  try {
-    const data = await db
-      .select({
-        // Word fields
-        id: quran_words.id,
-        sura_id: quran_words.sura_id,
-        aya_number: quran_words.aya_number,
-        page_id: quran_words.page_id,
-        text: quran_words.text,
-        is_end_of_aya: quran_words.is_end_of_aya,
-        can_stop: quran_words.can_stop,
-        sura_name: quran_suras.name,
-        
-        // Progress fields (nullable)
-        current_interval: user_progress.current_interval,
-        review_count: user_progress.review_count,
-        lapses: user_progress.lapses,
-        ease_factor: user_progress.ease_factor,
-        next_review_date: user_progress.next_review_date,
-        last_review_date: user_progress.last_review_date,
-        last_successful_date: user_progress.last_successful_date,
-        memory_tier: user_progress.memory_tier,
-        notes: user_progress.notes,
-      })
-      .from(quran_words)
-      .leftJoin(user_progress, eq(quran_words.id, user_progress.word_id))
-      .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
-      .where(
-        between(quran_words.id, startId, endId)
-      )
-      .orderBy(
-        // Order by word ID in sequence for Quranic order
-        asc(quran_words.id)
-      )
-      .limit(limit)
-      .offset(offset);
+  while (retries <= maxRetries) {
+    try {
+      const db = await getDrizzleDb();
+      
+      const data = await db
+        .select({
+          // Word fields
+          id: quran_words.id,
+          sura_id: quran_words.sura_id,
+          aya_number: quran_words.aya_number,
+          page_id: quran_words.page_id,
+          text: quran_words.text,
+          is_end_of_aya: quran_words.is_end_of_aya,
+          can_stop: quran_words.can_stop,
+          sura_name: quran_suras.name,
+          
+          // Progress fields (nullable)
+          current_interval: user_progress.current_interval,
+          review_count: user_progress.review_count,
+          lapses: user_progress.lapses,
+          ease_factor: user_progress.ease_factor,
+          next_review_date: user_progress.next_review_date,
+          last_review_date: user_progress.last_review_date,
+          last_successful_date: user_progress.last_successful_date,
+          memory_tier: user_progress.memory_tier,
+          notes: user_progress.notes,
+        })
+        .from(quran_words)
+        .leftJoin(user_progress, eq(quran_words.id, user_progress.word_id))
+        .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
+        .where(
+          between(quran_words.id, startId, endId)
+        )
+        .orderBy(
+          // Order by word ID in sequence for Quranic order
+          asc(quran_words.id)
+        )
+        .limit(limit)
+        .offset(offset);
 
-    return data as WordWithProgress[];
-  } catch (error) {
-    console.error('Error fetching words with progress batch:', error);
-    return []; // Return empty array instead of throwing
+      return data as WordWithProgress[];
+    } catch (error) {
+      retries++;
+      if (retries > maxRetries) {
+        console.error('Error fetching words with progress batch (final attempt):', error);
+        return []; // Return empty array instead of throwing
+      }
+      console.warn(`Error fetching words batch, retrying (${retries}/${maxRetries}):`, error);
+      // Small delay before retry
+      await new Promise(resolve => setTimeout(resolve, 100 * retries));
+    }
   }
+  
+  return [];
 }
 
 /**
@@ -95,33 +108,46 @@ export async function findDueReviewsInRange(
   startId: number, 
   endId: number
 ): Promise<DueReview[]> {
-  const db = await getDrizzleDb();
+  let retries = 0;
+  const maxRetries = 2;
   
-  try {
-    const data = await db
-      .select({
-        word_id: quran_words.id,
-        word_text: quran_words.text,
-        sura_name: quran_suras.name,
-        aya_number: quran_words.aya_number,
-      })
-      .from(quran_words)
-      .innerJoin(user_progress, eq(quran_words.id, user_progress.word_id))
-      .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
-      .where(
-        and(
-          between(quran_words.id, startId, endId),
-          lte(user_progress.next_review_date, sql`datetime('now')`)
+  while (retries <= maxRetries) {
+    try {
+      const db = await getDrizzleDb();
+      
+      const data = await db
+        .select({
+          word_id: quran_words.id,
+          word_text: quran_words.text,
+          sura_name: quran_suras.name,
+          aya_number: quran_words.aya_number,
+        })
+        .from(quran_words)
+        .innerJoin(user_progress, eq(quran_words.id, user_progress.word_id))
+        .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
+        .where(
+          and(
+            between(quran_words.id, startId, endId),
+            lte(user_progress.next_review_date, sql`datetime('now')`)
+          )
         )
-      )
-      .orderBy(asc(user_progress.next_review_date)) // Oldest due first
-      .limit(10); // Limit to prevent excessive scanning
+        .orderBy(asc(user_progress.next_review_date)) // Oldest due first
+        .limit(10); // Limit to prevent excessive scanning
 
-    return data as DueReview[];
-  } catch (error) {
-    console.error('Error finding due reviews:', error);
-    return []; // Return empty array instead of throwing
+      return data as DueReview[];
+    } catch (error) {
+      retries++;
+      if (retries > maxRetries) {
+        console.error('Error finding due reviews (final attempt):', error);
+        return []; // Return empty array instead of throwing
+      }
+      console.warn(`Error finding due reviews, retrying (${retries}/${maxRetries}):`, error);
+      // Small delay before retry
+      await new Promise(resolve => setTimeout(resolve, 100 * retries));
+    }
   }
+  
+  return [];
 }
 
 /**

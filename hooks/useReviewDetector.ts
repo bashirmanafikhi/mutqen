@@ -66,13 +66,27 @@ export function useReviewDetector({
       clearInterval(checkIntervalRef.current);
     }
 
-    checkIntervalRef.current = setInterval(() => {
-      checkForDueReviews();
-    }, checkInterval);
-
-    // Initial check
+    // Perform initial check immediately
     checkForDueReviews(true);
-  }, [checkInterval, checkForDueReviews]);
+
+    // Set up periodic interval - use inline function to avoid dependency on checkForDueReviews
+    checkIntervalRef.current = setInterval(async () => {
+      const now = Date.now();
+      if (now - lastCheckTimeRef.current >= checkInterval) {
+        setIsChecking(true);
+        try {
+          const reviews = await findDueReviewsInRange(startId, endId);
+          const reviewMap = new Map(reviews.map(review => [review.word_id, review]));
+          setDueReviews(reviewMap);
+          lastCheckTimeRef.current = now;
+        } catch (error) {
+          console.error('Error in periodic review check:', error);
+        } finally {
+          setIsChecking(false);
+        }
+      }
+    }, checkInterval);
+  }, [checkInterval, startId, endId, checkForDueReviews]);
 
   const stopPeriodicChecking = useCallback(() => {
     if (checkIntervalRef.current) {

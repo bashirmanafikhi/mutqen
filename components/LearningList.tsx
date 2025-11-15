@@ -94,13 +94,13 @@ const LearningList: React.FC<LearningListProps> = ({
                                 link: '/(train)/training/[...learningId]' as const,
                                 icon: 'school-outline' as const
                             },
-                            // { 
-                            //     type: 'progress', 
-                            //     label: t('actions.progress'), 
-                            //     bg: 'bg-app-success-light dark:bg-app-success-dark', 
-                            //     link: '/(train)/progress/[...learningId]' as const,
-                            //     icon: 'stats-chart-outline' as const
-                            // },
+                            { 
+                                type: 'progress', 
+                                label: t('actions.progress'), 
+                                bg: 'bg-app-success-light dark:bg-app-success-dark', 
+                                link: '/(train)/progress/[...learningId]' as const,
+                                icon: 'stats-chart-outline' as const
+                            },
                         ].map((btn, idx) => (
                             <Link
                                 key={idx}
