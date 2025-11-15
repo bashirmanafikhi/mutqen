@@ -2,14 +2,15 @@ import { useSettings } from '@/context/AppSettingContext';
 import { QuranDivision } from '@/models/QuranModels';
 import { fetchAllSahabaDivisions } from '@/services/data/divisionQueries';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    ListRenderItemInfo,
+    Modal,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,6 +26,7 @@ export default function SelectSahabaDivisionModal({
   onSelectDivision,
 }: SahabaModalProps) {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
   const [divisions, setDivisions] = useState<QuranDivision[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -84,10 +86,10 @@ export default function SelectSahabaDivisionModal({
             isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
           }`}>
             <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
-              تقسيم الصحابة
+              {t('selectSahaba.title')}
             </Text>
             <TouchableOpacity onPress={onClose} className="px-3 py-1">
-              <Text className="text-lg font-bold text-red-500 dark:text-red-400">إغلاق</Text>
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -96,7 +98,7 @@ export default function SelectSahabaDivisionModal({
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
               <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                جاري تحميل الأقسام...
+                {t('selectSahaba.loading')}
               </Text>
             </View>
           ) : (

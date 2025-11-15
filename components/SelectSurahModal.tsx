@@ -2,6 +2,7 @@ import { useSettings } from '@/context/AppSettingContext';
 import { Surah } from '@/models/QuranModels';
 import { fetchAllSurahs } from '@/services/data/surahQueries';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   FlatList,
@@ -22,6 +23,7 @@ interface SurahModalProps {
 
 export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: SurahModalProps) {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
 
   // FIX 1: State is correctly typed as Surah[]
   const [surahs, setSurahs] = useState<Surah[]>([]);
@@ -68,7 +70,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
         </View>
 
         <View className="flex-row text-right">
-          <Text className={`text-sm mr-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.aya_count} آية</Text>
+          <Text className={`text-sm mr-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t('selectSurah.aya_count', { count: item.aya_count ?? 0 })}</Text>
           <Text
             className={`text-sm font-medium ${item.revelation_place === 'مدنيه'
                 ? isDark ? 'text-blue-400' : 'text-blue-500'
@@ -96,9 +98,9 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
             className={`p-5 flex-row justify-between items-center border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
               }`}
           >
-            <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>قائمة السور</Text>
+            <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t('selectSurah.title')}</Text>
             <TouchableOpacity onPress={onClose} className="px-3 py-1">
-              <Text className="text-lg font-bold text-red-500 dark:text-red-400">إغلاق</Text>
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -106,7 +108,7 @@ export default function SelectSurahModal({ isVisible, onClose, onSelectSurah }: 
           {isLoading ? (
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
-              <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>جاري تحميل السور...</Text>
+              <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t('selectSurah.loading')}</Text>
             </View>
           ) : (
             <FlatList<Surah>

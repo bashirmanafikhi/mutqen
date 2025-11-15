@@ -3,6 +3,7 @@ import { useSettings } from '@/context/AppSettingContext';
 import { ProgressIndicatorProps } from '@/models/TrainingModels';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
@@ -15,6 +16,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   dueReviewsCount = 0
 }) => {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
 
   // Calculate progress percentage
   const totalRange = endId - startId + 1;
@@ -55,10 +57,10 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
   const getModeText = () => {
     switch (mode) {
-      case 'review': return `وضع المراجعة ${dueReviewsCount > 0 ? `(${dueReviewsCount})` : ''}`;
-      case 'memorization': return 'وضع الحفظ الجديد';
-      case 'training': return 'تدريب حر';
-      default: return 'وضع التدريب';
+      case 'review': return t('progress.mode.review', { count: dueReviewsCount });
+      case 'memorization': return t('progress.mode.memorization');
+      case 'training': return t('progress.mode.training');
+      default: return t('progress.mode.default');
     }
   };
 
@@ -100,7 +102,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           {dueReviewsCount > 0 && mode !== 'review' && (
             <View className="items-center">
               <Text className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                مستحقة
+                {t('progress.due')}
               </Text>
               <View className="flex-row items-center">
                 <Ionicons name="time" size={12} color="#F59E0B" />
@@ -114,7 +116,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           {/* Completion Progress */}
           <View className="items-center">
             <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              الإكمال
+              {t('progress.completion')}
             </Text>
             <Text className={`text-sm font-bold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
               {completionPercentage}%
@@ -124,7 +126,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           {/* Words Count */}
           <View className="items-center">
             <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              الكلمات
+              {t('progress.words')}
             </Text>
             <Text className={`text-sm font-bold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
               {completedWords}/{totalWords}
@@ -136,7 +138,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       {/* Range Info with Due Reviews */}
       <View className="flex-row justify-between items-center mt-1">
         <Text className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
-          الكلمة {currentWordId} من {startId} إلى {endId}
+          {t('progress.range_info', { current: currentWordId, start: startId, end: endId })}
         </Text>
         
         {/* Due Reviews Indicator */}
@@ -144,7 +146,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           <View className="flex-row items-center">
             <Ionicons name="alert-circle" size={12} color="#F59E0B" />
             <Text className={`text-xs mr-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-              {dueReviewsCount} كلمة تحتاج مراجعة
+              {t('progress.need_review', { count: dueReviewsCount })}
             </Text>
           </View>
         )}
@@ -154,7 +156,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           <View className="flex-row items-center">
             <Ionicons name="checkmark-done" size={12} color="#10B981" />
             <Text className={`text-xs mr-1 ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-              جاري مراجعة {dueReviewsCount} كلمة
+              {t('progress.reviewing', { count: dueReviewsCount })}
             </Text>
           </View>
         )}
@@ -167,7 +169,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           <View className="flex-row items-center">
             <View className="w-2 h-2 rounded-full bg-green-500 mr-1" />
             <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              محفوظة: {completedWords}
+              {t('progress.memorized', { count: completedWords })}
             </Text>
           </View>
           
@@ -176,7 +178,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-amber-500 mr-1" />
               <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                مستحقة: {dueReviewsCount}
+                {t('progress.due_count', { count: dueReviewsCount })}
               </Text>
             </View>
           )}
@@ -185,7 +187,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           <View className="flex-row items-center">
             <View className="w-2 h-2 rounded-full bg-gray-400 mr-1" />
             <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              متبقية: {totalWords - completedWords}
+              {t('progress.remaining', { count: totalWords - completedWords })}
             </Text>
           </View>
         </View>

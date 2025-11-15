@@ -4,12 +4,16 @@ import { AppActionsService } from '@/services/Utilities';
 import { Ionicons } from '@expo/vector-icons';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Drawer } from 'expo-router/drawer';
+import React from 'react'; // Added React import for safety
+import { useTranslation } from 'react-i18next'; // 👈 Added for translation
 import { Text, TouchableOpacity, View } from 'react-native';
 
 // ---------------------------------------------
 // Custom Drawer Content
 // ---------------------------------------------
 function CustomDrawerContent({ isDark, ...props }: any) {
+  const { t } = useTranslation();
+
   const colors = {
     drawerBackground: isDark ? '#1f2937' : '#ffffff',
     divider: isDark ? '#374151' : '#e5e7eb',
@@ -37,10 +41,10 @@ function CustomDrawerContent({ isDark, ...props }: any) {
           />
           <View>
             <Text style={{ color: colors.textPrimary }} className="text-2xl font-bold">
-              تطبيق متقن
+              {t('app.name')} 
             </Text>
             <Text style={{ color: colors.textSecondary }} className="text-sm mt-1">
-              تطبيق مساعدة لحفظ القرآن الكريم
+              {t('app.tagline')} 
             </Text>
           </View>
         </View>
@@ -62,7 +66,7 @@ function CustomDrawerContent({ isDark, ...props }: any) {
             style={{ marginRight: 12 }}
           />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            قيّم التطبيق
+            {t('drawer.rate_app')} 
           </Text>
         </TouchableOpacity>
 
@@ -77,7 +81,7 @@ function CustomDrawerContent({ isDark, ...props }: any) {
             style={{ marginRight: 12 }}
           />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            مشاركة التطبيق
+            {t('drawer.share_app')} 
           </Text>
         </TouchableOpacity>
 
@@ -92,7 +96,7 @@ function CustomDrawerContent({ isDark, ...props }: any) {
             style={{ marginRight: 12 }}
           />
           <Text style={{ color: colors.buttonText }} className="text-base font-semibold">
-            أرسل ملاحظاتك
+            {t('drawer.send_feedback')} 
           </Text>
         </TouchableOpacity>
       </View>
@@ -104,6 +108,7 @@ function CustomDrawerContent({ isDark, ...props }: any) {
 // Main Layout
 // ---------------------------------------------
 export default function AppLayout() {
+  const { t } = useTranslation(); // 👈 Added hook here
   const { isDark } = useSettings();
 
   const colors = {
@@ -131,7 +136,7 @@ export default function AppLayout() {
       <Drawer.Screen
         name="index"
         options={{
-          drawerLabel: 'الصفحة الرئيسية',
+          drawerLabel: t('navigation.home'), 
           drawerIcon: ({ focused, size }) => (
             <Ionicons
               className='mr-4'
@@ -145,7 +150,7 @@ export default function AppLayout() {
       <Drawer.Screen
         name="settings"
         options={{
-          drawerLabel: 'الإعدادات',
+          drawerLabel: t('navigation.settings'), 
           drawerIcon: ({ focused, size }) => (
             <Ionicons
               className='mr-4'
@@ -159,7 +164,7 @@ export default function AppLayout() {
       <Drawer.Screen
         name="about"
         options={{
-          drawerLabel: 'حول التطبيق',
+          drawerLabel: t('navigation.about'), 
           drawerIcon: ({ focused, size }) => (
             <Ionicons
               className='mr-4'

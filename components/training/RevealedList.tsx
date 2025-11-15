@@ -3,6 +3,7 @@ import { useSettings } from '@/context/AppSettingContext';
 import { toArabicNumber } from '@/services/Utilities';
 import { WordWithProgress } from '@/services/data/TrainingQueryService';
 import React, { forwardRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 interface RevealedListProps {
@@ -59,8 +60,15 @@ interface RevealedWordRowProps {
 const RevealedWordRow = React.memo(({ word, onPress, isLast }: RevealedWordRowProps) => {
   const { isDark } = useSettings();
 
+  const { t } = useTranslation();
   const hasProgress = word.memory_tier !== undefined && word.memory_tier > 0;
-  const memoryLabels = ['لم تتعلم', 'ضعيف', 'متوسط', 'جيد', 'ممتاز'];
+  const memoryLabels = [
+    t('training.memoryLabels.0'),
+    t('training.memoryLabels.1'),
+    t('training.memoryLabels.2'),
+    t('training.memoryLabels.3'),
+    t('training.memoryLabels.4')
+  ];
 
   return (
     <View className="mb-3">

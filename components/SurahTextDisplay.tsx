@@ -1,6 +1,7 @@
 import { useSettings } from '@/context/AppSettingContext';
 import { QuranWord } from '@/models/QuranModels';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Text, View } from 'react-native';
 
 // ===============================================
@@ -44,6 +45,7 @@ const groupWordsIntoAyas = (words: QuranWord[]): Aya[] => {
 
 const SurahTextDisplay = ({ words, surahName, isLoading }: SurahTextProps) => {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
   const ayas = groupWordsIntoAyas(words);
 
   const renderAyaItem = ({ item }: ListRenderItemInfo<Aya>) => (
@@ -57,12 +59,12 @@ const SurahTextDisplay = ({ words, surahName, isLoading }: SurahTextProps) => {
     </View>
   );
 
-  if (isLoading) {
+    if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
         <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-          جاري تحميل كلمات سورة {surahName}...
+          {t('surahText.loading', { name: surahName })}
         </Text>
       </View>
     );
@@ -72,7 +74,7 @@ const SurahTextDisplay = ({ words, surahName, isLoading }: SurahTextProps) => {
     return (
       <View className="flex-1 justify-center items-center p-8">
         <Text className="text-xl text-red-500 text-center">
-          لا توجد بيانات (كلمات) لسورة {surahName}. تأكد من ملء جدول QuranWords بالكامل.
+          {t('surahText.no_data', { name: surahName })}
         </Text>
       </View>
     );

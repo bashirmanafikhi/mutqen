@@ -142,10 +142,10 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
             color={isDark ? "#818CF8" : "#6366F1"}
           />
           <Text className="text-xl font-bold text-gray-700 dark:text-gray-200 mt-4">
-            تدريب حر
+            {t('training.free_training_title')}
           </Text>
           <Text className="text-gray-500 dark:text-gray-400 mt-2 text-center px-8">
-            جميع الكلمات في هذا النطاق مكتملة. جاري تحميل الكلمات للتدريب الحر...
+            {t('training.all_words_complete_message')}
           </Text>
 
           {/* Add a small loading indicator */}
@@ -212,11 +212,11 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
             />
             <Text className={`text-lg font-bold mt-4 ${isDark ? 'text-white' : 'text-gray-900'
               }`}>
-              الانتقال إلى وضع جديد
+              {t('training.transition_title')}
             </Text>
             <Text className={`text-sm mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'
               }`}>
-              جاري تحميل الكلمات...
+              {t('training.loading_words')}
             </Text>
           </View>
         </View>
@@ -279,7 +279,7 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
                 >
                   <Ionicons name="add-circle" size={14} color="#FFFFFF" />
                   <Text className="text-white font-semibold text-xs mr-1">
-                    عودة للحفظ
+                    {t('training.return_to_memorization')}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -293,7 +293,10 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
         }`}>
         <View className="flex-row justify-between items-center">
           <Text className="text-sm text-gray-500 dark:text-gray-400">
-            {canContinue ? `${revealedWords.length} كلمة مكشوفة` : 'نهاية الجلسة'}
+            {/* Interpolation Recommended for this string */}
+            {canContinue 
+              ? t('training.words_revealed_count', { count: revealedWords.length }) 
+              : t('training.session_end_message')}
           </Text>
 
           <View className="flex-row space-x-2">
@@ -301,7 +304,8 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
               <View className="flex-row items-center">
                 <Ionicons name="time" size={12} color="#F59E0B" />
                 <Text className="text-xs text-amber-600 dark:text-amber-400 mr-1">
-                  {reviewDetector.dueReviews.size} مراجعة مستحقة
+                  {/* Interpolation Recommended for this string */}
+                  {t('training.due_reviews_count', { count: reviewDetector.dueReviews.size })}
                 </Text>
               </View>
             )}
@@ -309,7 +313,7 @@ const TrainingSession: React.FC<TrainingSessionProps> = ({
               <View className="flex-row items-center">
                 <Ionicons name="infinite" size={12} color="#10B981" />
                 <Text className="text-xs text-green-600 dark:text-green-400 mr-1">
-                  تدريب حر
+                  {t('training.free_training_badge')}
                 </Text>
               </View>
             )}

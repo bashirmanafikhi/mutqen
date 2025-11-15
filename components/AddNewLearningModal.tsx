@@ -4,13 +4,13 @@ import { fetchWordRangeForPage, fetchWordRangeForSurah } from '@/services/data/w
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AccessibilityRole,
-  Alert,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    AccessibilityRole,
+    Alert,
+    Modal,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SelectHizbModal from './SelectHizbModal';
@@ -61,7 +61,7 @@ export default function AddNewLearningModal({
       finalize(surah.name!, range.start, range.end);
     } catch (err) {
       console.error('fetchWordRangeForSurah error', err);
-      Alert.alert('خطأ', 'تعذّر جلب نطاق السورة. حاول مرة أخرى.');
+      Alert.alert(t('common.error'), t('add_new.error_fetch_surah'));
     }
   };
 
@@ -74,7 +74,7 @@ export default function AddNewLearningModal({
       finalize(title, range.start, range.end);
     } catch (err) {
       console.error('fetchWordRangeForPage error', err);
-      Alert.alert('خطأ', 'تعذّر جلب نطاق الصفحة. حاول مرة أخرى.');
+      Alert.alert(t('common.error'), t('add_new.error_fetch_page'));
     }
   };
 
@@ -142,7 +142,7 @@ export default function AddNewLearningModal({
               <OptionButton title={t('add_new.option.page')} onPress={() => setActiveModal(ActiveModal.Page)} />
 
               <TouchableOpacity
-                onPress={() => Alert.alert('قريباً', 'ميزة التحديد المخصص ستكون متاحة قريبًا')}
+                onPress={() => Alert.alert(t('common.coming_soon'), t('add_new.custom_soon'))}
                 className="w-full p-4 rounded-lg mb-3 border border-app-border-light dark:border-app-border-dark bg-app-bg-light dark:bg-app-bg-dark"
                 activeOpacity={0.8}
                 accessibilityRole={'button' as AccessibilityRole}

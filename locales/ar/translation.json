@@ -1,116 +1,229 @@
 {
-    "dateTime": {
-        "never": "لم تتم بعد",
-        "format": "{{date}} في {{time}}",
-        "today": "اليوم في {{time}}",
-        "yesterday": "أمس في {{time}}"
+  "dateTime": {
+    "never": "لم تتم بعد",
+    "format": "{{date}} في {{time}}",
+    "today": "اليوم في {{time}}",
+    "yesterday": "أمس في {{time}}"
+  },
+  "home": {
+    "title": "متقن | حفظ القرآن الكريم",
+    "loading": "جارِ التحميل...",
+    "empty_title": "لا يوجد لديك أي محفوظات بعد.",
+    "empty_hint": "اضغط على \"+\" لإضافة عنصر جديد!",
+    "load_error": "فشل تحميل البيانات",
+    "create_error": "create_error",
+    "delete_error": "خطء أثناء التحميل"
+  },
+  "learningList": {
+    "loading_list": "جارِ تحميل قائمة المحفوظات...",
+    "all_quran": "القرآن الكريم كاملاً",
+    "new_saved": "تم الحفظ حديثًا"
+  },
+  "actions": {
+    "read": "قراءة",
+    "train": "تدريب",
+    "progress": "التقدم",
+    "delete": "حذف"
+  },
+  "add_new": {
+    "title": "إضافة حفظ جديد",
+    "cancel": "إلغاء",
+    "option": {
+      "surah": "السور",
+      "juz": "الأجزاء (جزء)",
+      "hizb": "الأحزاب",
+      "sahaba": "تحزيب الصحابة",
+      "page": "الصفحات",
+      "custom_soon": "تحديد مخصص (قريبًا)"
     },
-    "home": {
-        "title": "متقن | حفظ القرآن الكريم",
-        "loading": "جارِ التحميل...",
-        "empty_title": "لا يوجد لديك أي محفوظات بعد.",
-        "empty_hint": "اضغط على \"+\" لإضافة عنصر جديد!"
+    "error_fetch_surah": "فشل جلب بيانات السورة.",
+    "error_fetch_page": "فشل جلب بيانات الصفحة.",
+    "custom_soon": "ميزة التحديد المخصص ستكون متاحة قريبًا"
+  },
+  "cloze": {
+    "title": "تمرين الفراغات",
+    "loading": "تحميل التمرين...",
+    "no_words": "لا توجد كلمات ضمن هذا النطاق.",
+    "back": "عودة",
+    "mode_mcq": "اختيار متعدد",
+    "mode_typing": "كتابة",
+    "check": "تحقق",
+    "blank": "خانة رقم {{index}}",
+    "prev_alert_title": "بداية النطاق",
+    "prev_alert_msg": "أنت في بداية النطاق.",
+    "end_aya_title": "انتهت الآيات",
+    "end_aya_msg": "لقد وصلت إلى نهاية النطاق.",
+    "regen": "إعادة توليد",
+    "previous": "السابق",
+    "next": "التالي",
+    "finish": "انهاء",
+    "result_title": "النتيجة",
+    "result_ok": "حسناً",
+    "placeholder": "اكتب الكلمة هنا",
+    "auto": "تلقائي"
+  },
+  "read": {
+    "title": "تلاوة ومراجعة",
+    "loading": "جاري تحميل الآيات...",
+    "load_more": "جاري تحميل المزيد...",
+    "end": "نهاية القراءة",
+    "show_tafseer": "عرض التفسير ▼",
+    "hide_tafseer": "إخفاء التفسير ▲",
+    "no_tafseer": "لا يوجد تفسير لهذه الآية."
+  },
+  "progress": {
+    "no_data": "لا يوجد بيانات تقدّم في هذا المدى.",
+    "loading_progress": "جاري تحميل تقدم الكلمات",
+    "mode": {
+      "review": "مراجعة ({{count}} مستحقة)",
+      "memorization": "حفظ",
+      "training": "تدريب",
+      "default": "تدريب"
     },
-    "learningList": {
-        "loading_list": "جارِ تحميل قائمة المحفوظات...",
-        "all_quran": "القرآن الكريم كاملاً"
-    },
-    "actions": {
-        "read": "قراءة",
-        "train": "تدريب",
-        "progress": "التقدم",
-        "delete": "حذف"
-    },
-    "add_new": {
-        "title": "إضافة حفظ جديد",
-        "cancel": "إلغاء",
-        "option": {
-            "surah": "السور",
-            "juz": "الأجزاء (جزء)",
-            "hizb": "الأحزاب",
-            "sahaba": "تحزيب الصحابة",
-            "page": "الصفحات",
-            "custom_soon": "تحديد مخصص (قريبًا)"
-        }
-    },
-    "cloze": {
-        "title": "تمرين الفراغات",
-        "loading": "تحميل التمرين...",
-        "no_words": "لا توجد كلمات ضمن هذا النطاق.",
-        "back": "عودة",
-        "mode_mcq": "اختيار متعدد",
-        "mode_typing": "كتابة",
-        "check": "تحقق",
-        "blank": "خانة رقم {{index}}",
-        "prev_alert_title": "بداية النطاق",
-        "prev_alert_msg": "أنت في بداية النطاق.",
-        "end_aya_title": "انتهت الآيات",
-        "end_aya_msg": "لقد وصلت إلى نهاية النطاق.",
-        "regen": "إعادة توليد",
-        "previous": "السابق",
-        "next": "التالي",
-        "finish": "انهاء",
-        "result_title": "النتيجة",
-        "result_ok": "حسناً",
-        "placeholder": "اكتب الكلمة هنا",
-        "auto": "تلقائي"
-    },
-    "read": {
-        "title": "تلاوة ومراجعة",
-        "loading": "جاري تحميل الآيات...",
-        "load_more": "جاري تحميل المزيد...",
-        "end": "نهاية القراءة",
-        "show_tafseer": "عرض التفسير ▼",
-        "hide_tafseer": "إخفاء التفسير ▲",
-        "no_tafseer": "لا يوجد تفسير لهذه الآية."
-    },
-    "progress": {
-        "no_data": "لا يوجد بيانات تقدّم في هذا المدى.",
-        "loading_progress": "جاري تحميل تقدم الكلمات"
-    },
-    "training": {
-        "loading": "جارِ تحميل كلمات التدريب...",
-        "revealed_title": "الكلمات المكتشفة ({{count}})",
-        "change_confirm": "تغيير",
-        "preparing_session": "جاري إعداد الجلسة...",
-        "loading_words": "تحميل الكلمات وتجهيز نظام المراجعة",
-        "current_card": "البطاقة الحالية",
-        "revealed_words": "الكلمات المكشوفة",
-        "switch_to_review": "التبديل للمراجعة",
-        "no_more_words": "لا توجد كلمات متاحة",
-        "session_completed": "اكتملت الجلسة بنجاح!",
-        "session_summary": "ملخص الجلسة",
-        "restart_session": "إعادة الجلسة",
-        "return_home": "العودة للرئيسية",
-        "view_progress": "عرض التقدم الكامل",
-        "change": "تغيير",
-        "finished": "انتهيت!",
-        "restart": "إعادة",
-        "remaining": "{{count}} كلمة متبقية",
-        "memory_labels": [
-            "لم تتعلم",
-            "ضعيف",
-            "متوسط",
-            "جيد",
-            "ممتاز"
-        ]
-    },
-    "errors": {
-        "load_words": "حدث خطأ أثناء جلب كلمات النطاق."
-    },
-    "common": {
-        "ok": "موافق",
-        "soon": "قريبًا",
-        "error": "خطأ"
-    },
-    "settings": {
-        "title": "إعدادات التطبيق",
-        "language": "اللغة",
-        "theme_mode": "وضع المظهر",
-        "dark_mode": "الوضع الليلي",
-        "font_size": "حجم الخط",
-        "phone": "جهاز",
-        "light": "فاتح",
-        "dark": "داكن"
+    "due": "مستحقة",
+    "completion": "إكمال",
+    "words": "كلمات",
+    "range_info": "النطاق: {{current}} ({{start}}-{{end}})",
+    "need_review": "بحاجة للمراجعة ({{count}})",
+    "reviewing": "جارِ المراجعة ({{count}})",
+    "memorized": "تم حفظها ({{count}})",
+    "due_count": "مستحقة: {{count}}",
+    "remaining": "{{count}} متبقية",
+    "not_learned": "لم تتعلم",
+    "weak": "ضعيف",
+    "fair": "متوسط",
+    "good": "جيد",
+    "mastered": "ممتاز",
+    "total_words": "إجمالي الكلمات"
+  },
+  "training": {
+    "loading": "جارِ تحميل كلمات التدريب...",
+    "revealed_title": "الكلمات المكتشفة ({{count}})",
+    "change_confirm": "تغيير",
+    "preparing_session": "جاري إعداد الجلسة...",
+    "loading_words": "تحميل الكلمات وتجهيز نظام المراجعة",
+    "current_card": "البطاقة الحالية",
+    "revealed_words": "الكلمات المكشوفة",
+    "switch_to_review": "التبديل للمراجعة",
+    "no_more_words": "لا توجد كلمات متاحة",
+    "session_completed": "اكتملت الجلسة بنجاح!",
+    "session_summary": "ملخص الجلسة",
+    "restart_session": "إعادة الجلسة",
+    "return_home": "العودة للرئيسية",
+    "view_progress": "عرض التقدم الكامل",
+    "change": "تغيير",
+    "finished": "انتهيت!",
+    "restart": "إعادة",
+    "remaining": "{{count}} كلمة متبقية",
+    "memory_labels": [
+      "لم تتعلم",
+      "ضعيف",
+      "متوسط",
+      "جيد",
+      "ممتاز"
+    ],
+    "free_training_title": "تدريب حر",
+    "all_words_complete_message": "جميع الكلمات في هذا النطاق مكتملة. جاري تحميل الكلمات للتدريب الحر...",
+    "transition_title": "الانتقال إلى وضع جديد",
+    "return_to_memorization": "عودة للحفظ",
+    "free_training_badge": "تدريب حر",
+    "session_end_message": "نهاية الجلسة",
+    "words_revealed_count": "{{count}} كلمة مكشوفة",
+    "due_reviews_count": "{{count}} مراجعة مستحقة",
+    "memoryLabels": {
+      "0": "غير متعلم",
+      "1": "ضعيف",
+      "2": "متوسط",
+      "3": "جيد",
+      "4": "ممتاز"
     }
+  },
+  "trainingCard": {
+    "press_to_reveal": "اضغط للكشف",
+    "seconds": "ثواني",
+    "mode": {
+      "review": "مراجعة",
+      "memorization": "حفظ",
+      "mixed": "مختلط"
+    }
+  },
+  "language": {
+    "ar": "العربية",
+    "en": "الإنجليزية"
+  },
+  "selectSurah": {
+    "title": "اختيار سورة",
+    "loading": "جاري تحميل السور...",
+    "aya_count": "{{count}} آية"
+  },
+  "selectPage": {
+    "title": "اختيار صفحة",
+    "loading": "جاري تحميل الصفحات...",
+    "page": "صفحة {{number}}"
+  },
+  "selectJuz": {
+    "title": "اختيار جزء",
+    "loading": "جاري تحميل الأجزاء..."
+  },
+  "selectHizb": {
+    "title": "اختيار حزب",
+    "quarter": "ربع",
+    "full": "كامل"
+  },
+  "selectSahaba": {
+    "title": "اختيار تحزيب الصحابة",
+    "loading": "جاري تحميل التحزيم..."
+  },
+  "surahText": {
+    "loading": "جاري تحميل السورة {{name}}...",
+    "no_data": "لا يوجد نص متاح لـ {{name}}."
+  },
+  "errors": {
+    "load_words": "حدث خطأ أثناء جلب كلمات النطاق."
+  },
+  "common": {
+    "ok": "موافق",
+    "soon": "قريبًا",
+    "error": "خطأ",
+    "close": "إغلاق",
+    "coming_soon": "قريبًا"
+  },
+  "settings": {
+    "title": "إعدادات التطبيق",
+    "language": "اللغة",
+    "theme_mode": "وضع المظهر",
+    "dark_mode": "الوضع الليلي",
+    "font_size": "حجم الخط",
+    "phone": "جهاز",
+    "light": "فاتح",
+    "dark": "داكن"
+  },
+  "performance": {
+    "excellent": "أداء متميز!",
+    "great_job": "عمل رائع!",
+    "very_good": "جيد جداً",
+    "try_again": "حاول مرة أخرى"
+  },
+  "stats": {
+    "accuracy": "الدقة",
+    "words_reviewed": "الكلمات المراجعة",
+    "words_memorized": "الكلمات المحفوظة",
+    "current_streak": "التسلسل الحالي",
+    "completion_rate": "معدل الإكمال"
+  },
+  "navigation": {
+    "progress_report_title": "تقرير التقدم",
+    "home": "الصفحة الرئيسية",
+    "settings": "الإعدادات",
+    "about": "حول التطبيق"
+  },
+  "app": {
+    "name": "تطبيق متقن",
+    "tagline": "تطبيق مساعدة لحفظ القرآن الكريم"
+  },
+  "drawer": {
+    "rate_app": "قيّم التطبيق",
+    "share_app": "مشاركة التطبيق",
+    "send_feedback": "أرسل ملاحظاتك"
+  }
 }

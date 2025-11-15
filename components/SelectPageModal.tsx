@@ -2,14 +2,15 @@ import { useSettings } from '@/context/AppSettingContext';
 import { QuranPage } from '@/models/QuranModels';
 import { fetchAllPages } from '@/services/data/pageQueries';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    ListRenderItemInfo,
+    Modal,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,6 +22,7 @@ interface PageModalProps {
 
 export default function SelectPageModal({ isVisible, onClose, onSelectPage }: PageModalProps) {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
   const [pages, setPages] = useState<QuranPage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -57,7 +59,7 @@ export default function SelectPageModal({ isVisible, onClose, onSelectPage }: Pa
       }`}
     >
       <Text className={`text-lg font-bold text-center ${isDark ? 'text-indigo-300' : 'text-indigo-600'}`}>
-        صفحة {item.id}
+        {t('selectPage.page', { number: item.id })}
       </Text>
     </TouchableOpacity>
   );
@@ -77,10 +79,10 @@ export default function SelectPageModal({ isVisible, onClose, onSelectPage }: Pa
             isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
           }`}>
             <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
-              قائمة الصفحات
+              {t('selectPage.title')}
             </Text>
             <TouchableOpacity onPress={onClose} className="px-3 py-1">
-              <Text className="text-lg font-bold text-red-500 dark:text-red-400">إغلاق</Text>
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -89,7 +91,7 @@ export default function SelectPageModal({ isVisible, onClose, onSelectPage }: Pa
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
               <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                جاري تحميل الصفحات...
+                {t('selectPage.loading')}
               </Text>
             </View>
           ) : (

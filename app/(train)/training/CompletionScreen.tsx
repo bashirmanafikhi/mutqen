@@ -26,11 +26,12 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
   const { isDark } = useSettings();
   const router = useRouter();
 
+  // Updated to use translation keys for performance messages
   const getPerformanceMessage = () => {
-    if (stats.accuracy >= 90) return { message: 'أداء متميز!', icon: 'trophy', color: 'text-yellow-600' };
-    if (stats.accuracy >= 75) return { message: 'عمل رائع!', icon: 'star', color: 'text-green-600' };
-    if (stats.accuracy >= 60) return { message: 'جيد جداً', icon: 'thumbs-up', color: 'text-blue-600' };
-    return { message: 'حاول مرة أخرى', icon: 'refresh', color: 'text-gray-600' };
+    if (stats.accuracy >= 90) return { message: t('performance.excellent'), icon: 'trophy', color: 'text-yellow-600' };
+    if (stats.accuracy >= 75) return { message: t('performance.great_job'), icon: 'star', color: 'text-green-600' };
+    if (stats.accuracy >= 60) return { message: t('performance.very_good'), icon: 'thumbs-up', color: 'text-blue-600' };
+    return { message: t('performance.try_again'), icon: 'refresh', color: 'text-gray-600' };
   };
 
   const performance = getPerformanceMessage();
@@ -67,7 +68,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {/* Accuracy */}
             <View className="flex-row justify-between items-center">
               <Text className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                الدقة
+                {t('stats.accuracy')}
               </Text>
               <View className="flex-row items-center">
                 <Text className={`text-2xl font-bold ${
@@ -82,7 +83,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {/* Words Reviewed */}
             <View className="flex-row justify-between items-center">
               <Text className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                الكلمات المراجعة
+                {t('stats.words_reviewed')}
               </Text>
               <Text className="text-2xl font-bold text-indigo-600">
                 {stats.wordsReviewed}
@@ -92,7 +93,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {/* Words Memorized */}
             <View className="flex-row justify-between items-center">
               <Text className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                الكلمات المحفوظة
+                {t('stats.words_memorized')}
               </Text>
               <Text className="text-2xl font-bold text-purple-600">
                 {stats.wordsMemorized}
@@ -102,7 +103,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {/* Current Streak */}
             <View className="flex-row justify-between items-center">
               <Text className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                التسلسل الحالي
+                {t('stats.current_streak')}
               </Text>
               <View className="flex-row items-center">
                 <Ionicons 
@@ -121,7 +122,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {/* Completion Rate */}
             <View className="flex-row justify-between items-center">
               <Text className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                معدل الإكمال
+                {t('stats.completion_rate')}
               </Text>
               <Text className="text-2xl font-bold text-blue-600">
                 {Math.round((stats.wordsMemorized / totalWords) * 100)}%
@@ -175,7 +176,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
                 learningId: ['all'],
                 startWordId: startId.toString(),
                 endWordId: endId.toString(),
-                title: 'تقرير التقدم'
+                title: t('navigation.progress_report_title')
               }
             })}
             className={`w-full py-4 rounded-2xl justify-center items-center border ${
@@ -199,7 +200,7 @@ const CompletionScreen: React.FC<CompletionScreenProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Motivational Quote */}
+        {/* Motivational Quote (Keeping Arabic hardcoded as it is a specific religious quote) */}
         <View className={`mt-8 p-4 rounded-xl ${
           isDark ? 'bg-gray-800' : 'bg-gray-100'
         }`}>

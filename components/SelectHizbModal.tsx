@@ -2,14 +2,14 @@ import { useSettings } from '@/context/AppSettingContext';
 import { QuranDivision } from '@/models/QuranModels';
 import { fetchAllHizbs } from '@/services/data/hizbQueries';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   FlatList,
   ListRenderItemInfo,
   Modal,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -23,6 +23,8 @@ export default function SelectHizbModal({ isVisible, onClose, onSelectHizb }: Hi
   const { isDark } = useSettings();
   const [hizbs, setHizbs] = useState<QuranDivision[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     async function loadHizbs() {
@@ -55,29 +57,26 @@ export default function SelectHizbModal({ isVisible, onClose, onSelectHizb }: Hi
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleSelect(item)}
-        className={`mx-4 mb-3 p-5 rounded-3xl shadow-md border ${
-          isQuarter
+        className={`mx-4 mb-3 p-5 rounded-3xl shadow-md border ${isQuarter
             ? `bg-gray-50 border-gray-300 dark:bg-gray-800 dark:border-gray-700`
             : `bg-indigo-600 border-indigo-700 dark:bg-indigo-700 dark:border-indigo-800`
-        }`}
+          }`}
       >
         <Text
-          className={`text-lg font-semibold text-center ${
-            isQuarter
+          className={`text-lg font-semibold text-center ${isQuarter
               ? `text-gray-800 dark:text-gray-100`
               : `text-white dark:text-white`
-          }`}
+            }`}
         >
           {item.name}
         </Text>
         <Text
-          className={`text-sm text-center mt-1 ${
-            isQuarter
+          className={`text-sm text-center mt-1 ${isQuarter
               ? `text-gray-500 dark:text-gray-400`
               : `text-indigo-100 dark:text-indigo-200`
-          }`}
+            }`}
         >
-          {isQuarter ? 'ربع حزب' : 'حزب كامل'}
+          {isQuarter ? t('selectHizb.quarter') : t('selectHizb.full')}
         </Text>
       </TouchableOpacity>
     );
@@ -92,20 +91,17 @@ export default function SelectHizbModal({ isVisible, onClose, onSelectHizb }: Hi
     >
       <SafeAreaView className="flex-1 bg-black/50">
         <View
-          className={`flex-1 mt-16 rounded-t-3xl overflow-hidden ${
-            isDark ? 'bg-gray-900' : 'bg-white'
-          }`}
+          className={`flex-1 mt-16 rounded-t-3xl overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-white'
+            }`}
         >
           {/* Header */}
           <View
-            className={`p-5 flex-row justify-between items-center border-b ${
-              isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
-            }`}
+            className={`p-5 flex-row justify-between items-center border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
+              }`}
           >
             <Text
-              className={`text-2xl font-bold ${
-                isDark ? 'text-gray-100' : 'text-gray-800'
-              }`}
+              className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'
+                }`}
             >
               قائمة الأحزاب والأرباع
             </Text>
@@ -114,10 +110,10 @@ export default function SelectHizbModal({ isVisible, onClose, onSelectHizb }: Hi
             </TouchableOpacity>
           </View>
 
-          {/* List */}
+          {t('selectHizb.title')}
           {isLoading ? (
             <View className="flex-1 justify-center items-center">
-              <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">{t('common.close')}</Text>
               <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                 جاري تحميل الأحزاب...
               </Text>

@@ -2,14 +2,15 @@ import { useSettings } from '@/context/AppSettingContext';
 import { QuranJuz } from '@/models/QuranModels';
 import { fetchAllJuzs } from '@/services/data/juzQueries';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    ListRenderItemInfo,
+    Modal,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QuranProgressBar from './QuranProgressBar';
@@ -22,6 +23,7 @@ interface JuzModalProps {
 
 export default function SelectJuzModal({ isVisible, onClose, onSelectJuz }: JuzModalProps) {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
   const [juzs, setJuzs] = useState<QuranJuz[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -92,10 +94,10 @@ export default function SelectJuzModal({ isVisible, onClose, onSelectJuz }: JuzM
             }`}
           >
             <Text className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
-              قائمة الأجزاء
+              {t('selectJuz.title')}
             </Text>
             <TouchableOpacity onPress={onClose} className="px-3 py-1">
-              <Text className="text-lg font-bold text-red-500 dark:text-red-400">إغلاق</Text>
+              <Text className="text-lg font-bold text-red-500 dark:text-red-400">{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -104,7 +106,7 @@ export default function SelectJuzModal({ isVisible, onClose, onSelectJuz }: JuzM
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#4F46E5'} />
               <Text className={`mt-2 text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                جاري تحميل الأجزاء...
+                {t('selectJuz.loading')}
               </Text>
             </View>
           ) : (

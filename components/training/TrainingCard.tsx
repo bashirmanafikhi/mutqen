@@ -3,6 +3,7 @@ import { useSettings } from '@/context/AppSettingContext';
 import { CardProps } from '@/models/TrainingModels';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Animated, Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 
@@ -19,6 +20,7 @@ const TrainingCard: React.FC<CardProps> = ({
   timer = 5 
 }) => {
   const { isDark } = useSettings();
+  const { t } = useTranslation();
   const [localTimer, setLocalTimer] = useState(timer);
   const translateX = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<number | undefined>(undefined);
@@ -164,7 +166,7 @@ const TrainingCard: React.FC<CardProps> = ({
                       ?
                     </Text>
                     <Text className={`text-lg font-semibold text-center ${colors.text}`}>
-                      اضغط للكشف
+                      {t('trainingCard.press_to_reveal')}
                     </Text>
                   </View>
                 ) : (
@@ -185,7 +187,7 @@ const TrainingCard: React.FC<CardProps> = ({
                     color={isDark ? "#9CA3AF" : "#6B7280"} 
                   />
                   <Text className="text-sm text-gray-600 dark:text-gray-300 mr-1">
-                    {localTimer} ثانية
+                    {localTimer} {t('trainingCard.seconds')}
                   </Text>
                 </View>
               </View>
@@ -222,7 +224,7 @@ const TrainingCard: React.FC<CardProps> = ({
           : 'bg-green-500'
       }`}>
         <Text className="text-xs text-white font-semibold">
-          {mode === 'review' ? 'مراجعة' : mode === 'memorization' ? 'حفظ جديد' : 'مختلط'}
+          {mode === 'review' ? t('trainingCard.mode.review') : mode === 'memorization' ? t('trainingCard.mode.memorization') : t('trainingCard.mode.mixed')}
         </Text>
       </View>
     </View>

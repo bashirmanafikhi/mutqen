@@ -12,10 +12,10 @@ export default function LanguageToggle() {
   return (
     <View style={{ flexDirection: 'row', gap: 8 }}>
       <TouchableOpacity onPress={changeToAr} className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700">
-        <Text className="text-sm">العربية</Text>
+        <Text className="text-sm">{t('language.ar')}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={changeToEn} className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700">
-        <Text className="text-sm">English</Text>
+        <Text className="text-sm">{t('language.en')}</Text>
       </TouchableOpacity>
     </View>
   );

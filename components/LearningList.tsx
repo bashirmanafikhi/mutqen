@@ -175,7 +175,7 @@ const LearningList: React.FC<LearningListProps> = ({
                         style={{ marginRight: 4 }}
                     />
                     <Text className="text-xs text-gray-500 dark:text-gray-400">
-                        حفظ جديد
+                        {t('learningList.new_saved')}
                     </Text>
                 </View>
             </View>

@@ -1,5 +1,6 @@
 import { computeRangeTierStats } from "@/services/data/userProgressQueries";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Text, View } from "react-native";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function QuranProgressBar({ firstWordId, lastWordId }: Props) {
+    const { t } = useTranslation();
     const [stats, setStats] = useState({
         notLearned: 0,
         weak: 0,
@@ -49,12 +51,12 @@ export default function QuranProgressBar({ firstWordId, lastWordId }: Props) {
             </View>
 
             <View style={{ marginTop: 6, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-                {stats.notLearned ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >غير متعلمة: {/*stats.notLearned*/} ({Math.round(pct(stats.notLearned))}%)</Text> : null}
-                {stats.weak ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >ضعيف: {/*stats.weak*/} ({Math.round(pct(stats.weak))}%)</Text> : null}
-                {stats.fair ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >وسط: {/*stats.fair*/} ({Math.round(pct(stats.fair))}%)</Text> : null}
-                {stats.good ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >جيد: {/*stats.good*/} ({Math.round(pct(stats.good))}%)</Text> : null}
-                {stats.mastered ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >متقن: {/*stats.mastered*/} ({Math.round(pct(stats.mastered))}%)</Text> : null}
-                <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2 font-bold">عدد الكلمات: {stats.total}</Text>
+                {stats.notLearned ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >{t('progress.not_learned')}: ({Math.round(pct(stats.notLearned))}%)</Text> : null}
+                {stats.weak ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >{t('progress.weak')}: ({Math.round(pct(stats.weak))}%)</Text> : null}
+                {stats.fair ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >{t('progress.fair')}: ({Math.round(pct(stats.fair))}%)</Text> : null}
+                {stats.good ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >{t('progress.good')}: ({Math.round(pct(stats.good))}%)</Text> : null}
+                {stats.mastered ? <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2" >{t('progress.mastered')}: ({Math.round(pct(stats.mastered))}%)</Text> : null}
+                <Text className="text-xs text-gray-500 dark:text-gray-400 mr-2 font-bold">{t('progress.total_words')}: {stats.total}</Text>
             </View>
         </View>
     );
