@@ -11,7 +11,7 @@ export default function TrainingPage() {
 
   return (
     <>
-      <Stack.Screen options={{ title }} />
+      <Stack.Screen options={{ headerShown:false, statusBarHidden:true }} />
       <TrainingSession 
         startWordId={startWordId}
         endWordId={endWordId}

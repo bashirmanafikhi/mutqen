@@ -1,4 +1,4 @@
-// src/hooks/useTrainingEngine.ts
+// src/hooks/useTrainingEngine.ts - UPDATED
 import { UserProgress } from '@/models/QuranModels';
 import { TrainingState, TrainingStats } from '@/models/TrainingModels';
 import { WordWithProgress, hasMoreDueReviews } from '@/services/data/TrainingQueryService';
@@ -24,15 +24,13 @@ export function useTrainingEngine({
   hasMoreWords
 }: UseTrainingEngineProps) {
   const [state, setState] = useState<TrainingState>({
-    mode: 'mixed',
+    mode: 'memorization',
     currentWordIndex: 0,
     words: [],
     revealedWords: [],
     dueReviews: new Map(),
     isAtCanStop: false,
-    hasMoreDueReviews: false,
-    showReviewAlert: false,
-    reviewAlertWordId: undefined
+    hasMoreDueReviews: false
   });
 
   const [stats, setStats] = useState<TrainingStats>({
@@ -47,17 +45,35 @@ export function useTrainingEngine({
   const currentStreakRef = useRef(0);
   const correctAnswersRef = useRef(0);
   const totalAnswersRef = useRef(0);
+  const restartCounterRef = useRef(0);
 
   // Initialize training state when words change
   useEffect(() => {
     if (words.length > 0) {
-      setState(prev => ({
-        ...prev,
-        words,
-        dueReviews,
-        currentWordIndex: 0,
-        revealedWords: []
-      }));
+      setState(prev => {
+        // Always reset on initial load (when words were empty)
+        // OR when we're transitioning from a finished state (restart scenario)
+        const isInitialLoad = prev.words.length === 0;
+        const isRestarting = prev.currentWordIndex >= prev.words.length && prev.revealedWords.length > 0 && words.length > 0;
+        
+        if (isInitialLoad || isRestarting) {
+          return {
+            ...prev,
+            words,
+            dueReviews,
+            currentWordIndex: 0,
+            revealedWords: [],
+            mode: 'memorization'
+          };
+        }
+        
+        // Append new words without resetting UI state (batch loading scenario)
+        return {
+          ...prev,
+          words,
+          dueReviews
+        };
+      });
     }
   }, [words, dueReviews]);
 
@@ -69,7 +85,7 @@ export function useTrainingEngine({
 
       // Check if current word is at can-stop boundary
       const isAtCanStop = currentWord.can_stop || false;
-      
+
       // Check if there are more due reviews ahead
       const moreDueReviews = await hasMoreDueReviews(currentWord.id, endId);
 
@@ -78,19 +94,10 @@ export function useTrainingEngine({
         isAtCanStop,
         hasMoreDueReviews: moreDueReviews
       }));
-
-      // Check if we need to show review alert
-      if (dueReviews.has(currentWord.id) && !state.showReviewAlert) {
-        setState(prev => ({
-          ...prev,
-          showReviewAlert: true,
-          reviewAlertWordId: currentWord.id
-        }));
-      }
     };
 
     checkTrainingState();
-  }, [state.currentWordIndex, state.words, dueReviews, endId, state.showReviewAlert]);
+  }, [state.currentWordIndex, state.words, dueReviews, endId]);
 
   // Auto-load more words when approaching end of current batch
   useEffect(() => {
@@ -106,6 +113,30 @@ export function useTrainingEngine({
   const getRevealedWords = useCallback((): WordWithProgress[] => {
     return state.revealedWords;
   }, [state.revealedWords]);
+
+  // ADD THIS METHOD: Restart session
+  const restartSession = useCallback(() => {
+    restartCounterRef.current += 1;
+    setState(prev => ({
+      ...prev,
+      currentWordIndex: 0,
+      revealedWords: [],
+      mode: 'memorization'
+    }));
+
+    setStats({
+      totalWords: 0,
+      wordsReviewed: 0,
+      wordsMemorized: 0,
+      currentStreak: 0,
+      accuracy: 100,
+      sessionStartTime: new Date()
+    });
+
+    currentStreakRef.current = 0;
+    correctAnswersRef.current = 0;
+    totalAnswersRef.current = 0;
+  }, []);
 
   const updateProgress = useCallback(async (quality: number) => {
     const currentWord = getCurrentWord();
@@ -141,7 +172,7 @@ export function useTrainingEngine({
         currentStreakRef.current = 0;
       }
 
-      const accuracy = totalAnswersRef.current > 0 
+      const accuracy = totalAnswersRef.current > 0
         ? Math.round((correctAnswersRef.current / totalAnswersRef.current) * 100)
         : 100;
 
@@ -157,9 +188,7 @@ export function useTrainingEngine({
       setState(prev => ({
         ...prev,
         revealedWords: [...prev.revealedWords, currentWord],
-        currentWordIndex: prev.currentWordIndex + 1,
-        showReviewAlert: false,
-        reviewAlertWordId: undefined
+        currentWordIndex: prev.currentWordIndex + 1
       }));
 
       // Remove from due reviews if it was there
@@ -205,14 +234,6 @@ export function useTrainingEngine({
     }));
   }, []);
 
-  const dismissReviewAlert = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      showReviewAlert: false,
-      reviewAlertWordId: undefined
-    }));
-  }, []);
-
   const canContinue = useCallback((): boolean => {
     return state.currentWordIndex < state.words.length - 1;
   }, [state.currentWordIndex, state.words.length]);
@@ -225,23 +246,22 @@ export function useTrainingEngine({
     // State
     state,
     stats,
-    
+
     // Current word info
     currentWord: getCurrentWord(),
     revealedWords: getRevealedWords(),
     hasMoreWords: state.currentWordIndex < state.words.length - 1,
-    
+
     // Actions
     updateProgress,
     jumpToReview,
     continueMemorization,
     switchToReviewMode,
-    dismissReviewAlert,
-    
+    restartSession, // ADD THIS: Now it's available
+
     // Status checks
     canContinue: canContinue(),
     isFinished: isFinished(),
-    hasDueReviews: state.dueReviews.size > 0,
-    shouldShowReviewAlert: state.showReviewAlert
+    hasDueReviews: state.dueReviews.size > 0
   };
 }

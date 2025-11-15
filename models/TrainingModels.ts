@@ -1,28 +1,7 @@
 // src/models/TrainingModels.ts
-import { DueReview, WordWithProgress } from "@/services/data/TrainingQueryService";
+import { WordWithProgress } from "@/services/data/TrainingQueryService";
 
-export type TrainingMode = 'review' | 'memorization' | 'mixed';
-
-export interface TrainingState {
-  mode: TrainingMode;
-  currentWordIndex: number;
-  words: WordWithProgress[];
-  revealedWords: WordWithProgress[];
-  dueReviews: Map<number, string>;
-  isAtCanStop: boolean;
-  hasMoreDueReviews: boolean;
-  showReviewAlert: boolean;
-  reviewAlertWordId?: number;
-}
-
-export interface TrainingStats {
-  totalWords: number;
-  wordsReviewed: number;
-  wordsMemorized: number;
-  currentStreak: number;
-  accuracy: number;
-}
-
+export type TrainingMode = 'review' | 'memorization' | 'training';
 
 export interface TrainingState {
   mode: TrainingMode;
@@ -32,9 +11,6 @@ export interface TrainingState {
   dueReviews: Map<number, string>;
   isAtCanStop: boolean;
   hasMoreDueReviews: boolean;
-  showReviewAlert: boolean;
-  reviewAlertWordId?: number;
-  reviewAlertWordText?: string;
 }
 
 export interface TrainingStats {
@@ -57,14 +33,6 @@ export interface CardProps {
   timer?: number;
 }
 
-export interface ReviewAlertProps {
-  isVisible: boolean;
-  dueReview: DueReview | null;
-  onJumpToReview: () => void;
-  onDismiss: () => void;
-  onContinueAnyway: () => void;
-}
-
 export interface ProgressIndicatorProps {
   currentWordId: number;
   startId: number;
@@ -72,6 +40,7 @@ export interface ProgressIndicatorProps {
   totalWords: number;
   completedWords: number;
   mode: TrainingMode;
+  dueReviewsCount: number;
 }
 
 export interface ModeIndicatorProps {

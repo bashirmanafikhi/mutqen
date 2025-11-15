@@ -1,6 +1,6 @@
 // src/services/TrainingQueryService.ts
 import { quran_suras, quran_words, user_progress } from '@/db/schema';
-import { and, asc, between, desc, eq, gt, gte, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, between, desc, eq, gt, gte, lte, sql } from 'drizzle-orm';
 import { getDrizzleDb } from '../DrizzleConnection';
 
 export interface WordWithProgress {
@@ -34,6 +34,7 @@ export interface DueReview {
 
 /**
  * Fetches words with progress data in batches with efficient joins
+ * Always returns all words in the range for sequential training
  */
 export async function fetchWordsWithProgressBatch(
   startId: number,
@@ -71,18 +72,10 @@ export async function fetchWordsWithProgressBatch(
       .leftJoin(user_progress, eq(quran_words.id, user_progress.word_id))
       .leftJoin(quran_suras, eq(quran_words.sura_id, quran_suras.id))
       .where(
-        and(
-          between(quran_words.id, startId, endId),
-          // Only include words that are either due for review or haven't been learned
-          or(
-            lte(user_progress.next_review_date, sql`datetime('now')`),
-            isNull(user_progress.word_id) // Words without progress
-          )
-        )
+        between(quran_words.id, startId, endId)
       )
       .orderBy(
-        // Priority: due reviews first, then new words
-        desc(user_progress.next_review_date),
+        // Order by word ID in sequence for Quranic order
         asc(quran_words.id)
       )
       .limit(limit)
@@ -91,7 +84,7 @@ export async function fetchWordsWithProgressBatch(
     return data as WordWithProgress[];
   } catch (error) {
     console.error('Error fetching words with progress batch:', error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 }
 
@@ -127,7 +120,7 @@ export async function findDueReviewsInRange(
     return data as DueReview[];
   } catch (error) {
     console.error('Error finding due reviews:', error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 }
 
@@ -163,7 +156,7 @@ export async function findNearestCanStop(
     return data[0]?.id || null;
   } catch (error) {
     console.error('Error finding nearest can_stop:', error);
-    throw error;
+    return null;
   }
 }
 
@@ -174,17 +167,22 @@ export async function getRangeStartingPoint(
   startId: number,
   endId: number
 ): Promise<number> {
-  // Find the nearest can_stop before startId (with 3-word buffer)
-  const bufferStart = Math.max(1, startId - 3);
-  const nearestCanStop = await findNearestCanStop(bufferStart, 'before', bufferStart, endId);
-  
-  // If no can_stop found or it's too far back, use the original start
-  if (!nearestCanStop || nearestCanStop < bufferStart - 10) {
-    return startId;
+  try {
+    // Find the nearest can_stop before startId (with 3-word buffer)
+    const bufferStart = Math.max(1, startId - 3);
+    const nearestCanStop = await findNearestCanStop(bufferStart, 'before', bufferStart, endId);
+    
+    // If no can_stop found or it's too far back, use the original start
+    if (!nearestCanStop || nearestCanStop < bufferStart - 10) {
+      return startId;
+    }
+    
+    // Start from the word after the can_stop boundary
+    return nearestCanStop + 1;
+  } catch (error) {
+    console.error('Error getting range starting point:', error);
+    return startId; // Fallback to original start
   }
-  
-  // Start from the word after the can_stop boundary
-  return nearestCanStop + 1;
 }
 
 /**

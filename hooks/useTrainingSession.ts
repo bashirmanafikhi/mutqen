@@ -1,6 +1,6 @@
-// src/hooks/useTrainingSession.ts
+// src/hooks/useTrainingSession.ts - FIXED VERSION
 import { getRangeStartingPoint } from '@/services/data/TrainingQueryService';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBatchLoader } from './useBatchLoader';
 import { useReviewDetector } from './useReviewDetector';
 import { useTrainingEngine } from './useTrainingEngine';
@@ -18,76 +18,91 @@ export function useTrainingSession({
 }: UseTrainingSessionProps) {
   const [actualStartId, setActualStartId] = useState<number>(startId);
   const [isInitializing, setIsInitializing] = useState(true);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Initialize with proper starting point considering can-stop boundaries
   useEffect(() => {
     const initializeStartingPoint = async () => {
+      if (isNaN(startId) || isNaN(endId) || startId > endId) {
+        if (isMounted.current) {
+          setIsInitializing(false);
+        }
+        return;
+      }
+
       setIsInitializing(true);
       try {
         const startingPoint = await getRangeStartingPoint(startId, endId);
-        setActualStartId(startingPoint);
+        if (isMounted.current) {
+          setActualStartId(startingPoint);
+        }
       } catch (error) {
         console.error('Error initializing starting point:', error);
-        setActualStartId(startId);
+        if (isMounted.current) {
+          setActualStartId(startId);
+        }
       } finally {
-        setIsInitializing(false);
+        if (isMounted.current) {
+          setIsInitializing(false);
+        }
       }
     };
 
     initializeStartingPoint();
   }, [startId, endId]);
 
-  // Batch loading for words
+  // Batch loading for words - only start when we have the actual start ID
   const batchLoader = useBatchLoader({
     startId: actualStartId,
     endId,
     batchSize
   });
 
-  // Review detection
+  // Review detection - only start when we have words
   const reviewDetector = useReviewDetector({
     startId: actualStartId,
     endId,
-    currentWordId: batchLoader.words[0]?.id // Use first word as current for detection
+    currentWordId: batchLoader.words[0]?.id
   });
 
-  // Training engine
+  // Training engine - only start when we have words
   const trainingEngine = useTrainingEngine({
     startId: actualStartId,
     endId,
     words: batchLoader.words,
-    dueReviews: new Map(Array.from(reviewDetector.dueReviews).map(([id, review]) => [id, review.word_text])),
+    dueReviews: batchLoader.dueReviews,
     onLoadMore: batchLoader.loadMore,
     hasMoreWords: batchLoader.hasMore
   });
 
-  // Start periodic review checking when session begins
+  // FIX: Add proper dependencies to prevent infinite loop
   useEffect(() => {
-    if (!isInitializing && batchLoader.words.length > 0) {
+    if (!isInitializing && !batchLoader.loading && batchLoader.words.length > 0) {
       reviewDetector.startPeriodicChecking();
     }
 
     return () => {
       reviewDetector.stopPeriodicChecking();
     };
-  }, [isInitializing, batchLoader.words.length, reviewDetector]);
-
-  // Update review detector with current word
-  useEffect(() => {
-    if (trainingEngine.currentWord) {
-      // The review detector will use this to check for current word reviews
-      // This is handled internally by the training engine
-    }
-  }, [trainingEngine.currentWord]);
+  }, [isInitializing, batchLoader.loading, batchLoader.words.length, reviewDetector.startPeriodicChecking, reviewDetector.stopPeriodicChecking]); // ADD THESE DEPENDENCIES
 
   const restartSession = useCallback(() => {
     batchLoader.reset();
     reviewDetector.checkForDueReviews(true);
   }, [batchLoader, reviewDetector]);
 
+  // Combined loading state
+  const isLoading = isInitializing || batchLoader.loading;
+
   return {
     // State
-    isInitializing: isInitializing || batchLoader.loading,
+    isInitializing: isLoading,
     actualStartId,
     
     // Batch loading

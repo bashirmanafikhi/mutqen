@@ -91,7 +91,7 @@ const LearningList: React.FC<LearningListProps> = ({
                                 type: 'train',
                                 label: t('actions.train'),
                                 bg: 'bg-app-primary-light dark:bg-app-primary-dark',
-                                link: '/(train)/cards/[...learningId]' as const,
+                                link: '/(train)/training/[...learningId]' as const,
                                 icon: 'school-outline' as const
                             },
                             // { 

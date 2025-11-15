@@ -7,8 +7,7 @@ import { Animated, Dimensions, Text, TouchableOpacity, View } from 'react-native
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.15;
-const CARD_HEIGHT = 160;
+const SWIPE_THRESHOLD = 80; // Fixed threshold instead of percentage
 
 const TrainingCard: React.FC<CardProps> = ({ 
   word, 
@@ -21,10 +20,19 @@ const TrainingCard: React.FC<CardProps> = ({
 }) => {
   const { isDark } = useSettings();
   const [localTimer, setLocalTimer] = useState(timer);
-  const [translateX] = useState(new Animated.Value(0));
-  const [opacity] = useState(new Animated.Value(1));
-  const [scale] = useState(new Animated.Value(1));
+  const translateX = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<number | undefined>(undefined);
+
+  // Reset card position and timer when word changes
+  useEffect(() => {
+    translateX.setValue(0);
+    setLocalTimer(timer);
+    
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  }, [word.id, timer, translateX]);
 
   // Timer countdown
   useEffect(() => {
@@ -33,6 +41,7 @@ const TrainingCard: React.FC<CardProps> = ({
         setLocalTimer(prev => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
+            onReveal?.(1); // Auto-reveal with lowest quality when timer ends
             return 0;
           }
           return prev - 1;
@@ -45,7 +54,7 @@ const TrainingCard: React.FC<CardProps> = ({
         clearInterval(timerRef.current);
       }
     };
-  }, [isRevealed, localTimer]);
+  }, [isRevealed, localTimer, onReveal]);
 
   const onGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
@@ -62,30 +71,13 @@ const TrainingCard: React.FC<CardProps> = ({
       if (isSwipedRight || isSwipedLeft) {
         const isCorrect = isSwipedRight;
         
-        // Animate card out
-        Animated.parallel([
-          Animated.timing(translateX, {
-            toValue: isCorrect ? SCREEN_WIDTH : -SCREEN_WIDTH,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scale, {
-            toValue: 0.8,
-            duration: 300,
-            useNativeDriver: true,
-          })
-        ]).start(() => {
-          onSwipe(word.id, isCorrect);
-        });
+        // Immediate swipe action
+        onSwipe?.(word.id, isCorrect);
       } else {
-        // Return to original position
-        Animated.spring(translateX, {
+        // Return to original position quickly
+        Animated.timing(translateX, {
           toValue: 0,
+          duration: 150,
           useNativeDriver: true,
         }).start();
       }
@@ -95,7 +87,7 @@ const TrainingCard: React.FC<CardProps> = ({
   const handleRevealPress = () => {
     if (!isRevealed) {
       const quality = Math.max(1, Math.min(5, localTimer));
-      onReveal(quality);
+      onReveal?.(quality);
     }
   };
 
@@ -108,7 +100,6 @@ const TrainingCard: React.FC<CardProps> = ({
       };
     }
 
-    // Different colors based on mode
     if (mode === 'review') {
       return {
         bg: isDark ? 'bg-blue-900/30' : 'bg-blue-50',
@@ -125,11 +116,6 @@ const TrainingCard: React.FC<CardProps> = ({
   };
 
   const colors = getCardColors();
-  const rotation = translateX.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: ['-10deg', '0deg', '10deg'],
-    extrapolate: 'clamp',
-  });
 
   return (
     <View className="w-full items-center">
@@ -137,12 +123,7 @@ const TrainingCard: React.FC<CardProps> = ({
       <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
         <Animated.View 
           style={{ 
-            transform: [
-              { translateX },
-              { rotate: rotation },
-              { scale }
-            ],
-            opacity 
+            transform: [{ translateX }],
           }}
           className={`w-full max-w-sm border-2 rounded-3xl shadow-xl ${colors.bg} ${colors.border}`}
         >
@@ -176,9 +157,9 @@ const TrainingCard: React.FC<CardProps> = ({
               </View>
             ) : (
               // Hidden State
-              <View className="w-full items-center">
+              <View className="w-full items-center justify-between" style={{ height: 120 }}>
                 {showQuestionMark ? (
-                  <View className="items-center">
+                  <View className="items-center flex-1 justify-center">
                     <Text className="text-6xl text-gray-400 dark:text-gray-500 mb-2">
                       ?
                     </Text>
@@ -187,25 +168,25 @@ const TrainingCard: React.FC<CardProps> = ({
                     </Text>
                   </View>
                 ) : (
-                  <Text className={`text-4xl font-uthmanic text-center ${colors.text}`}>
-                    {word.text}
-                  </Text>
-                )}
-                
-                {/* Timer */}
-                <View className="absolute bottom-4">
-                  <View className={`flex-row items-center px-3 py-1 rounded-full ${
-                    isDark ? 'bg-gray-700' : 'bg-gray-200'
-                  }`}>
-                    <Ionicons 
-                      name="time-outline" 
-                      size={14} 
-                      color={isDark ? "#9CA3AF" : "#6B7280"} 
-                    />
-                    <Text className="text-sm text-gray-600 dark:text-gray-300 mr-1">
-                      {localTimer} ثانية
+                  <View className="flex-1 justify-center">
+                    <Text className={`text-4xl font-uthmanic text-center ${colors.text}`}>
+                      {word.text}
                     </Text>
                   </View>
+                )}
+                
+                {/* Timer - Properly positioned at bottom */}
+                <View className={`flex-row items-center px-3 py-1 rounded-full ${
+                  isDark ? 'bg-gray-700' : 'bg-gray-200'
+                }`}>
+                  <Ionicons 
+                    name="time-outline" 
+                    size={14} 
+                    color={isDark ? "#9CA3AF" : "#6B7280"} 
+                  />
+                  <Text className="text-sm text-gray-600 dark:text-gray-300 mr-1">
+                    {localTimer} ثانية
+                  </Text>
                 </View>
               </View>
             )}
@@ -213,8 +194,8 @@ const TrainingCard: React.FC<CardProps> = ({
         </Animated.View>
       </PanGestureHandler>
 
-      {/* Swipe Instructions */}
-      {!isRevealed && (
+      {/* Swipe Instructions - Only show when not revealed */}
+      {/* {!isRevealed && (
         <View className="flex-row justify-between w-full max-w-sm mt-4 px-4">
           <View className="flex-row items-center">
             <Ionicons name="close-circle" size={20} color="#EF4444" />
@@ -230,7 +211,7 @@ const TrainingCard: React.FC<CardProps> = ({
             <Ionicons name="checkmark-circle" size={20} color="#10B981" />
           </View>
         </View>
-      )}
+      )} */}
 
       {/* Mode Badge */}
       <View className={`absolute -top-2 px-3 py-1 rounded-full ${
