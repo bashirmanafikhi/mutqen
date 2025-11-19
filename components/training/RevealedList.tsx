@@ -13,13 +13,12 @@ interface RevealedListProps {
 
 const RevealedList = forwardRef<FlatList<WordWithProgress>, RevealedListProps>(
   ({ revealedWords, onWordPress }, ref) => {
-    const { isDark } = useSettings();
 
     const renderItem = useCallback(
       ({ item, index }: { item: WordWithProgress; index: number }) => (
         <RevealedWordRow
           word={item}
-          isLast={index === revealedWords.length - 1}
+          isLast={index === 0}
           onPress={onWordPress}
         />
       ),
@@ -36,7 +35,7 @@ const RevealedList = forwardRef<FlatList<WordWithProgress>, RevealedListProps>(
         data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={{ 
+        contentContainerStyle={{
           paddingBottom: 10,
           paddingHorizontal: 0
         }}
@@ -61,7 +60,6 @@ const RevealedWordRow = React.memo(({ word, onPress, isLast }: RevealedWordRowPr
   const { isDark } = useSettings();
 
   const { t } = useTranslation();
-  const hasProgress = word.memory_tier !== undefined && word.memory_tier > 0;
   const memoryLabels = [
     t('training.memoryLabels.0'),
     t('training.memoryLabels.1'),
@@ -75,42 +73,50 @@ const RevealedWordRow = React.memo(({ word, onPress, isLast }: RevealedWordRowPr
       {/* Word Card */}
       <TouchableOpacity
         onPress={() => onPress(word)}
-        className={`flex-row items-center justify-between p-4 rounded-2xl shadow-sm border ${
-          isDark
+        className={`flex-row items-center justify-between p-4 rounded-2xl shadow-sm border ${isDark
             ? 'bg-gray-800 border-gray-700'
             : 'bg-white border-gray-200'
-        }`}
+          }`}
         activeOpacity={0.7}
       >
-        {/* Word Text - Centered */}
-        <View className="flex-1 items-center">
-          <Text className="text-2xl font-uthmanic text-center text-gray-900 dark:text-gray-100 mb-1">
-            {word.text}
+
+        {/* Memory Tier Badge */}
+        <View className={`ml-2 px-2 py-1 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-100'
+          }`}>
+          <Text className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            {word.sura_name}
           </Text>
           <Text className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            {word.sura_name} - آية {toArabicNumber(word.aya_number)}
+            آية {toArabicNumber(word.aya_number)}
+          </Text>
+        </View>
+
+        {/* Word Text - Centered */}
+        <View className="flex-1 items-center">
+          <Text className={`p-2 ${isLast ? "text-4xl" : "text-3xl"} font-uthmanic text-center text-gray-900 dark:text-gray-100 mb-1`}>
+            {word.text}
           </Text>
         </View>
 
         {/* Memory Tier Badge */}
-        {hasProgress && (
-          <View className={`ml-2 px-2 py-1 rounded-full ${
-            isDark ? 'bg-gray-700' : 'bg-gray-100'
+        <View className={`ml-2 px-2 py-1 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-100'
           }`}>
-            <Text className="text-xs text-gray-600 dark:text-gray-300">
-              {memoryLabels[word.memory_tier!]}
-            </Text>
-          </View>
-        )}
+          <Text className="text-xs text-gray-600 dark:text-gray-300">
+            {memoryLabels[word.memory_tier!]}
+          </Text>
+          <Text className="text-xs text-gray-600 dark:text-gray-300 text-center">
+            
+            {word.ease_factor !== undefined && `EF: ${word.ease_factor.toFixed(1)}`}
+
+          </Text>
+        </View>
+
       </TouchableOpacity>
 
       {/* Aya Separator */}
       {!isLast && word.is_end_of_aya && (
         <View className="items-center mt-2">
-          <View className={`w-8 h-0.5 rounded-full ${
-            isDark ? 'bg-gray-600' : 'bg-gray-300'
-          }`} />
-          <Text className="text-2xl font-uthmanic text-gray-700 dark:text-gray-300 mt-1">
+          <Text className="text-4xl font-uthmanic text-gray-700 dark:text-gray-300 mt-1">
             {toArabicNumber(word.aya_number)}
           </Text>
         </View>
