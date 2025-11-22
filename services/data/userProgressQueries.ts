@@ -102,9 +102,13 @@ export async function upsertProgressDb(progress: UserProgress): Promise<void> {
  * Corresponds to: SELECT ... FROM user_progress WHERE word_id BETWEEN ? AND ?;
  */
 export async function fetchProgressRangeDb(startId: number, endId: number): Promise<UserProgress[]> {
-  const db = await getDrizzleDb();
-  
   try {
+    const db = await getDrizzleDb();
+    
+    if (!db) {
+      throw new Error("Database connection is not initialized");
+    }
+    
     const data = await db
       .select({
         word_id: user_progress.word_id,
@@ -125,7 +129,7 @@ export async function fetchProgressRangeDb(startId: number, endId: number): Prom
     return data as UserProgress[];
   } catch (err) {
     console.error('Error fetching progress range:', err);
-    return [];
+    throw err; // Re-throw to allow caller to handle or log
   }
 }
 
@@ -135,9 +139,13 @@ export async function fetchProgressRangeDb(startId: number, endId: number): Prom
 export async function computeRangeTierStats(startId: number | null, endId: number | null) {
   if (startId === null || endId === null) return { total: 0, tiers: {}, rawBuckets: {} };
 
-  const db = await getDrizzleDb();
-
   try {
+    const db = await getDrizzleDb();
+    
+    if (!db) {
+      throw new Error("Database connection is not initialized");
+    }
+
     // 1. Total words in range (from quran_words)
     const totalWordsRes = await db
       .select({ total: sql<number>`count(*)` })
@@ -212,6 +220,6 @@ export async function computeRangeTierStats(startId: number | null, endId: numbe
     return { total, tiers: tiersPercent, rawBuckets: buckets };
   } catch (err) {
     console.error('Error computing range tier stats:', err);
-    return { total: 0, tiers: {}, rawBuckets: {} };
+    throw err; // Re-throw to allow caller to handle or log
   }
 }

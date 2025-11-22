@@ -388,6 +388,7 @@ export default function ReadProgress() {
       });
     } catch (err) {
       console.error("Error loading analytics:", err);
+      // Don't throw - allow UI to show empty state
     }
   }, [startWordId, endWordId]);
 
@@ -455,7 +456,8 @@ export default function ReadProgress() {
       setHasMore(batchEndId < endWordId);
 
     } catch (err) {
-      console.error("Error loading progress:", err);
+      console.error("Error loading progress data:", err);
+      // Don't throw - allow UI to show error state or empty list
     } finally {
       setLoading(false);
       setRefreshing(false);
